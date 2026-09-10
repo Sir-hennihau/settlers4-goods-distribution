@@ -958,6 +958,28 @@ with  ρ = L/S :
     </ul>
     <p style="margin-top:1.2em">So with this setting there is <strong>no stage at which anything overflows</strong>. The surpluses are flat lines, not ramps — which is the actual test of a balanced chain: a ramp means one link is outrunning the next and will keep doing so.</p>
     <p><span class="badge">What overflow would look like</span> If you see one of these climbing steadily, it names the broken link. <strong>Gold bars ramping</strong> — the weaponsmith is starved, almost always of iron bars, so check the iron-bar panel before touching coal. <strong>Iron bars ramping</strong> — both smiths are stalled, or you have more iron smelts than smiths to feed. <strong>Weapons ramping</strong> — the rarer case: too little gold, so cut the weaponsmith and toolsmith and give the goldsmelter the difference. And a stalled building of any type is holding 8 units of its input hostage for as long as it stays stalled.</p>
+    <h3>Does coal pile at one building while another runs dry?</h3>
+    <p>Yes — at exactly one of them, by design, and it costs you eight units. Measuring the coal actually sitting in each type's input pile, with no starting buffer so coal supply is the binding constraint:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Coal supply</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">% of cycles the type was short of coal</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">average coal held, as % of its own pile cap</th><th>T3 / tools</th></tr>
+        <tr><th></th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th></th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>100 %</td><td>7 %</td><td>0 %</td><td>0 %</td><td>5 %</td><td>1 %</td><td>90 %</td><td>full</td><td>2 %</td><td>1225 / 191</td></tr>
+          <tr><td>90 %</td><td>40 %</td><td>0 %</td><td>0 %</td><td>30 %</td><td>1 %</td><td>72 %</td><td>full</td><td>1 %</td><td>1033 / 191</td></tr>
+          <tr><td>80 %</td><td>48 %</td><td>12 %</td><td>0 %</td><td>42 %</td><td>1 %</td><td>2 %</td><td>full</td><td>1 %</td><td>903 / 190</td></tr>
+          <tr><td>70 %</td><td>56 %</td><td>25 %</td><td>0 %</td><td>51 %</td><td>1 %</td><td>1 %</td><td>full</td><td>1 %</td><td>781 / 190</td></tr>
+          <tr><td>60 %</td><td>63 %</td><td>39 %</td><td>0 %</td><td>59 %</td><td>0 %</td><td>1 %</td><td>full</td><td>1 %</td><td>659 / 190</td></tr>
+          <tr><td>50 %</td><td>69 %</td><td>54 %</td><td>0 %</td><td>64 %</td><td>0 %</td><td>1 %</td><td>full</td><td>1 %</td><td>538 / 189</td></tr>
+          <tr><td>35 %</td><td>80 %</td><td>70 %</td><td>0 %</td><td>3 %</td><td>0 %</td><td>0 %</td><td>full</td><td>48 %</td><td>349 / 188</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em"><strong>The toolsmith sits on a permanently full pile while everyone else runs empty.</strong> That is the fat slider doing its job: it is first in the queue, so it tops up to its cap of 8 and stays there, never dry at any supply level down to 35 %. The cost is eight units of coal held as standing inventory — against a goldsmelter pile capacity of 103 in this build, it is noise. That is the trade you are making, and it is a good one.</p>
+    <p><strong>The goldsmelter and weaponsmith deliberately run just-in-time</strong>, holding 1–2 % of their capacity. They are never full and never hoard from each other. When coal tightens they starve <em>together and in step</em> — 40 % and 30 % at nine-tenths supply, 63 % and 59 % at six-tenths — because the ledger keeps their counters proportional. That is the system working correctly: shortage is shared, not dumped on one building.</p>
+    <p>The iron smelter is the one that changes character. At full supply it carries a 90 % buffer; by 80 % supply that buffer is gone (2 %) and it starts starving too. <strong>Watch the iron smelter's pile as your early-warning light</strong> — when it stops being comfortably full, you are about to become coal-limited, roughly one notch before the smiths visibly stall.</p>
+    <p>The bottom row is the only genuine one-full-one-empty case, and the coal slider did not cause it. At 35 % supply the weaponsmith's dry rate collapses to 3 % and its pile jumps to 48 % — not because it is well fed, but because it has run out of <em>iron bars</em> and stopped consuming. It is now a stalled building holding coal, exactly the effect described above. Coal piling up at a smith is almost never a coal problem.</p>
+
     <p><span class="badge">Caveat</span> This run carries a coal buffer of roughly 270 units banked during the opening, when four coal mines fed only two iron smelts and a toolsmith. That buffer absorbs small imbalances, so a <em>bad</em> setting looks better here than it does in a coal-tight game — the naive split leaks only 60 idle gold in this run against 343 when the mines exactly match demand. The recommended setting is flat either way; the point of the caveat is that the buffer is doing you a favour, and burning it late is what exposes a wrong slider.</p>
 
     <p style="margin-top:1.2em">Identical soldiers, identical tools, a hair <em>better</em> uptime. By the endgame coal supply and demand are nearly matched, so the pile cap and the free-skip rule absorb the small surplus on the iron smelter — the mistake self-corrects when the economy is big, but not when it is small.</p>
