@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How Settlers IV Distributes Goods</title>
-<meta name="description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and a minute-by-minute slider schedule for tier-3 soldier production.">
+<meta name="description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and the slider settings for tier-3 soldier production.">
 <meta property="og:title" content="How Settlers IV Distributes Goods">
-<meta property="og:description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and a minute-by-minute slider schedule for tier-3 soldier production.">
+<meta property="og:description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and the slider settings for tier-3 soldier production.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%E2%9A%96%3C/text%3E%3C/svg%3E">
@@ -907,10 +907,10 @@ with  ρ = L/S :
         <thead><tr><th>Minute</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">Coal panel</th><th colspan="2" style="text-align:center;border-bottom:1px solid var(--hair-2)">Iron-bar panel</th><th>ρ</th><th></th></tr>
         <tr><th></th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Tool</th><th>Weapon</th><th></th><th></th></tr></thead>
         <tbody>
-          <tr class="hot"><td>0</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>tools only</td></tr>
-          <tr><td>10</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>no change</td></tr>
-          <tr><td>20</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>no change</td></tr>
-          <tr><td>30</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>smiths start going up</td></tr>
+          <tr class="hot"><td>0</td><td>0</td><td>33</td><td>67</td><td>0</td><td>100</td><td>0</td><td>—</td><td>tools only</td></tr>
+          <tr><td>10</td><td>0</td><td>33</td><td>67</td><td>0</td><td>100</td><td>0</td><td>—</td><td>no change</td></tr>
+          <tr><td>20</td><td>0</td><td>33</td><td>67</td><td>0</td><td>100</td><td>0</td><td>—</td><td>no change</td></tr>
+          <tr><td>30</td><td>0</td><td>33</td><td>67</td><td>0</td><td>100</td><td>0</td><td>—</td><td>smiths start going up</td></tr>
           <tr class="hot"><td>40</td><td>17</td><td>26</td><td>40</td><td>17</td><td>68</td><td>32</td><td>2.13</td><td>military online</td></tr>
           <tr class="hot"><td>50</td><td>20</td><td>20</td><td>40</td><td>20</td><td>48</td><td>52</td><td>0.94</td><td></td></tr>
           <tr class="hot"><td>60</td><td>21</td><td>18</td><td>40</td><td>21</td><td>41</td><td>59</td><td>0.70</td><td>≈200 T3</td></tr>
@@ -929,19 +929,36 @@ with  ρ = L/S :
       <table class="memmap slider">
         <thead><tr><th>Strategy</th><th>T3 @60</th><th>@80</th><th>@100</th><th>@140</th><th>Tools</th><th>Toolsmith uptime</th><th>Idle bars</th></tr></thead>
         <tbody>
-          <tr class="hot"><td>the schedule above</td><td>189</td><td>376</td><td>846</td><td>1645</td><td>349</td><td>97.0 %</td><td>0</td></tr>
-          <tr><td>set-once <span style="opacity:.75">gold 22 iron 16 tool 40 weapon 22</span></td><td>184</td><td>384</td><td>828</td><td>1628</td><td>316</td><td>87.9 %</td><td>92</td></tr>
+          <tr class="hot"><td>the schedule above (6 settings)</td><td>160</td><td>360</td><td>839</td><td>1638</td><td>355</td><td>98.7 %</td><td>0</td></tr>
+          <tr><td>opening + the minute-40 swap only (2 settings)</td><td>160</td><td>360</td><td>820</td><td>1619</td><td>354</td><td>98.4 %</td><td>88</td></tr>
+          <tr><td>never change it — <span style="opacity:.75">gold 22 iron 16 tool 40 weapon 22</span></td><td>184</td><td>384</td><td>828</td><td>1628</td><td>316</td><td>87.9 %</td><td>92</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">The schedule buys <strong>+33 tools, +9 points of toolsmith uptime, +17 soldiers</strong> and clears the 92 stranded iron bars. If you only want to touch the panel twice, minute 0 and minute 40 alone already capture most of it (354 tools, 98.4 % uptime).</p>
-    <p>Two things to notice in the table. The toolsmith's <em>coal</em> slider never drops below 40 and its <em>iron-bar</em> slider never drops below 40 either — both are floors, not ratios. Following the exact ρ curve down to an iron-bar setting of tool 20 / weapon 80 late in the game costs 2.5 points of uptime for nothing, because a capacity-limited building needs queue priority rather than a fair share. And the early rows use 3 rather than 0 on gold and weapon: identical while those buildings don't exist, but it removes the risk of leaving a 0 in place, which is unrecoverable.</p>
+    <p style="margin-top:1.2em"><strong>Two settings do almost all the work.</strong> The opening plus one swap at minute 40 gives 354 tools at 98.4 % uptime, against 316 and 87.9 % for never touching it — <strong>+38 tools and +10 points of uptime for a single change</strong>. The four later tweaks add one more tool and 19 more soldiers, and clear the 88 stranded bars. Do the two; do the rest if you enjoy it.</p>
+    <p>Never changing does buy about 24 more soldiers by minute 60, because more coal goes to gold and weapons early. But it leaves the toolsmith dry an eighth of the time and costs 38 tools — 38 settlers that never went to work.</p>
+    <p>Two things to notice in the table. The toolsmith's <em>coal</em> slider never drops below 40 and its <em>iron-bar</em> slider never drops below 40 either — both are floors, not ratios. Following the exact ρ curve down to an iron-bar setting of tool 20 / weapon 80 late in the game costs 2.5 points of uptime for nothing, because a capacity-limited building needs queue priority rather than a fair share. And the opening must use <strong>exactly 0</strong> on gold and weapon, not 1 or 3. This is the one place the 0-is-dangerous rule inverts: a 0 % type is excluded from the lookup outright, but a 1 % type with a zero counter scores <em class="term">128/1</em> and beats a toolsmith whose counter has passed 31 — so from the moment your first goldsmelter is finished it wins <em>every</em> coal job and starves the toolsmith through the whole 30-to-40 window. Measured: a 1 in place of the 0 costs 25 tools and 6.7 points of uptime. The flip side is that you must not forget the minute-40 swap — left at 0 forever you build no soldiers at all.</p>
 
     <h3><span class="badge asm">Ceiling warning</span> 1000 by 1:40 does not fit in one sector</h3>
     <p>Your milestones imply 200 T3 between minute 35 and 60 (8/min), 200 more by 80 (10/min), then <strong>600 in the last twenty minutes — 30 per minute</strong>. That last figure needs 125.5 coal a minute, which is <strong>119 % of the 105.63/min a single economy sector can dispatch</strong>. No slider setting reaches it; the simulation tops out at 846 by minute 100 and gets to 1000 around minute 110.</p>
     <p>Three ways out, in order of practicality: start the military ramp earlier so the curve is flatter and never demands 30/min; split the settlement into <strong>two economy sectors</strong>, each of which gets its own full dispatch budget; or accept 1:50 instead of 1:40. The first is free and is what the schedule above assumes you will do.</p>
 
-    <h3>Recommended settings</h3>
+    <h3>Bottom line</h3>
+    <div class="verdicts" style="margin-bottom:18px">
+      <div class="verdict">
+        <span class="stage">Step 1 · minute 0 until your weaponsmiths actually run (≈min 40)</span>
+        <h4 class="setnums"><span><i>gold</i>0</span><span><i>iron</i>33</span><span><i>tool</i>67</span><span><i>weapon</i>0</span></h4>
+        <p class="note">Iron-bar panel: <strong>tool 100 · weapon 0</strong>. Exactly 0 on gold and weapon — see below, a 1 here costs 25 tools.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">Step 2 · minute 40 to the end of the game</span>
+        <h4 class="setnums"><span><i>gold</i>22</span><span><i>iron</i>16</span><span><i>tool</i>40</span><span><i>weapon</i>22</span></h4>
+        <p class="note">Iron-bar panel: <strong>tool 40 · weapon 60</strong>. Shipyard, vehicle hall and arrow factory at 0. This is the setting you finish the game on.</p>
+      </div>
+    </div>
+    <p style="margin-bottom:22px"><strong>That is the whole recommendation — one change, at minute 40.</strong> It is worth +38 tools and +10 points of toolsmith uptime over never touching the panel. The four extra rows in the table above are a refinement worth 19 soldiers; take them or leave them.</p>
+
+    <h3>The endgame setting, in detail</h3>
     <div class="verdicts">
       <div class="verdict">
         <span class="stage">Coal panel · gold / iron / tool / weapon</span>

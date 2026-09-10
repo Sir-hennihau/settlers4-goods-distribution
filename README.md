@@ -8,21 +8,34 @@ and what to set them to for tier-3 soldier production.
 
 ## TL;DR — the settings
 
-For tier-3 soldiers (1 weapon + 2 gold bars), one toolsmith kept running:
+Two settings, one change. For tier-3 soldiers (1 weapon + 2 gold bars) with the toolsmith kept running:
 
-| panel | Gold | Iron | **Tool** | Weapon |
+**Opening — minute 0 until your weaponsmiths actually run (~min 40)**
+
+| panel | Gold | Iron | Tool | Weapon |
 |---|---|---|---|---|
-| **Coal** | 22 | 16 | **40** | 22 |
-| **Iron bars** | — | — | **40** | 60 |
+| Coal | **0** | 33 | 67 | **0** |
+| Iron bars | — | — | 100 | 0 |
 
-Arrow factory, shipyard and vehicle hall at 0. Set it on turn one and never touch it — the
-ledger is cumulative, so every mid-game tweak costs a measurable catch-up during which somebody
-gets nothing. Gold and weapon must be **equal**; that is your check that the rows are in the
-right order (the panel lists Toolsmith *above* Weaponsmith).
+**Minute 40 to the end**
 
-The 40 on the toolsmith is not 40 % of your coal — a toolsmith can only eat 2.6 % of the
-dispatch ceiling, and a full building is skipped for free. It means "first in the queue whenever
-it has room", which is why it costs nothing and holds 99.7 % uptime.
+| panel | Gold | Iron | Tool | Weapon |
+|---|---|---|---|---|
+| Coal | 22 | 16 | **40** | 22 |
+| Iron bars | — | — | **40** | 60 |
+
+Arrow factory, shipyard and vehicle hall at 0. Worth **+38 tools and +10 points of toolsmith
+uptime** over never touching the panel. Gold and weapon must be **equal** in the second setting —
+that is your check that the rows are in the right order, since the panel lists Toolsmith *above*
+Weaponsmith.
+
+The 40 on the toolsmith is not 40% of your coal — a toolsmith can only eat 2.6% of the dispatch
+ceiling, and a full building is skipped for free. It means "first in the queue whenever it has
+room", which is why it costs nothing and holds 98% uptime.
+
+Use **exactly 0** in the opening, not 1: a 0% type is excluded from the lookup, but a 1% type with
+a zero counter beats everything the moment it is built and starves the toolsmith. Then don't forget
+the minute-40 swap, or you build no soldiers at all.
 
 There is also a **minute-by-minute schedule** in the report (six changes across a 140-minute game)
 which is worth about +33 tools and +9 points of toolsmith uptime over the fixed setting.
