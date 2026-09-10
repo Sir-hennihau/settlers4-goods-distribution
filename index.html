@@ -197,6 +197,19 @@ em.term{font-style:normal;font-family:var(--mono);font-size:.85em;background:var
 .memmap.slider td{font-variant-numeric:tabular-nums}
 .memmap.slider td:nth-child(-n+6){font-family:var(--mono);font-size:13px;color:var(--ink)}
 .memmap.slider th{white-space:nowrap}
+
+/* labelled slider numbers in the recommendation cards */
+.setnums{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.setnums span{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  min-width:52px;padding:5px 8px 6px;border:1px solid var(--hair-2);border-radius:3px;
+  background:var(--ground);font-family:var(--mono);font-size:19px;font-weight:500;
+  color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1;
+}
+.setnums i{
+  font-style:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:400;
+}
 .memmap tr.hot td:nth-child(3){color:var(--ink);font-weight:600}
 .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
@@ -762,7 +775,7 @@ with  ρ = L/S :
       </table>
     </div>
     <p style="margin-top:1.2em">The two <strong>equal</strong> numbers are always the goldsmelter and the weaponsmith — rows 1 and 4, not 1 and 3. If your panel shows them equal, you have entered it correctly.</p>
-    <p>The shipped 25/25/25/25 is not arbitrary: it is exactly right for an economy making <strong>one tool per weapon</strong>. That is an opening assumption. Every minute you spend in the T3 endgame it drifts further from correct, and the fully-converged answer puts 40 on the goldsmelter, 20 on the ironsmelter, 40 on the weaponsmith and nothing on the toolsmith.</p>
+    <p>The shipped default — 25 on each of goldsmelter, ironsmelter, toolsmith and weaponsmith — is not arbitrary: it is exactly right for an economy making <strong>one tool per weapon</strong>. That is an opening assumption. Every minute you spend in the T3 endgame it drifts further from correct, and the fully-converged answer puts 40 on the goldsmelter, 20 on the ironsmelter, 40 on the weaponsmith and nothing on the toolsmith.</p>
     <p>The tools-only row is the clearest demonstration of the distortion. To split coal <strong>50/50</strong> between the ironsmelter and the toolsmith you must set the sliders to <strong>33 and 67</strong> — because every coal the toolsmith gets is shadowed by an iron bar.</p>
 
     <h3>Measured on your Roman planner build</h3>
@@ -874,16 +887,16 @@ with  ρ = L/S :
     <p>Run the <em>early</em> setting on the full endgame build and it costs nothing:</p>
     <div class="scrollx">
       <table class="memmap slider">
-        <thead><tr><th>Setting</th><th>T3 (min 30–100)</th><th>Tools</th><th>Toolsmith uptime</th></tr></thead>
+        <thead><tr><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>T3 (min 30–100)</th><th>Tools</th><th>Toolsmith uptime</th></tr></thead>
         <tbody>
-          <tr class="hot"><td>22 / 16 / 40 / 22</td><td>1259</td><td>248</td><td>99.7 %</td></tr>
-          <tr><td>23 / 14 / 40 / 23</td><td>1259</td><td>248</td><td>99.4 %</td></tr>
-          <tr><td>21 / 18 / 40 / 21</td><td>1259</td><td>248</td><td>99.6 %</td></tr>
+          <tr class="hot"><td>22</td><td>16</td><td>40</td><td>22</td><td>1259</td><td>248</td><td>99.7 %</td></tr>
+          <tr><td>23</td><td>14</td><td>40</td><td>23</td><td>1259</td><td>248</td><td>99.4 %</td></tr>
+          <tr><td>21</td><td>18</td><td>40</td><td>21</td><td>1259</td><td>248</td><td>99.6 %</td></tr>
         </tbody>
       </table>
     </div>
     <p style="margin-top:1.2em">Identical soldiers, identical tools, a hair <em>better</em> uptime. By the endgame coal supply and demand are nearly matched, so the pile cap and the free-skip rule absorb the small surplus on the iron smelter — the mistake self-corrects when the economy is big, but not when it is small.</p>
-    <p>And switching is not free: moving from 22/16 to 23/14 around the 200-soldier mark costs <strong>702 deliveries, about 7 minutes with the iron smelter frozen</strong>, to buy nothing at all. So set the early-weighted numbers on turn one and leave them.</p>
+    <p>And switching is not free: moving the iron slider from 16 down to 14, with gold and weapon going 22 → 23, around the 200-soldier mark costs <strong>702 deliveries, about 7 minutes with the iron smelter frozen</strong>, to buy nothing at all. So set the early-weighted numbers on turn one and leave them.</p>
     <p>The general rule, to derive it for a different tool count: with the toolsmith self-limiting, split whatever is left after its slider across gold, iron and weapon as <strong>2 : (1&nbsp;+&nbsp;ρ) : 2</strong>, where ρ is tools per weapon. Early ρ&nbsp;≈&nbsp;0.34, late ≈&nbsp;0.15, and the whole span from 4 to 26 T3/min only moves the iron slider between 18 and 13.</p>
 
     <h3>The clock schedule — you cannot see the ledger, so go by the minute</h3>
@@ -917,12 +930,12 @@ with  ρ = L/S :
         <thead><tr><th>Strategy</th><th>T3 @60</th><th>@80</th><th>@100</th><th>@140</th><th>Tools</th><th>Toolsmith uptime</th><th>Idle bars</th></tr></thead>
         <tbody>
           <tr class="hot"><td>the schedule above</td><td>189</td><td>376</td><td>846</td><td>1645</td><td>349</td><td>97.0 %</td><td>0</td></tr>
-          <tr><td>set-once 22/16/40/22</td><td>184</td><td>384</td><td>828</td><td>1628</td><td>316</td><td>87.9 %</td><td>92</td></tr>
+          <tr><td>set-once <span style="opacity:.75">gold 22 iron 16 tool 40 weapon 22</span></td><td>184</td><td>384</td><td>828</td><td>1628</td><td>316</td><td>87.9 %</td><td>92</td></tr>
         </tbody>
       </table>
     </div>
     <p style="margin-top:1.2em">The schedule buys <strong>+33 tools, +9 points of toolsmith uptime, +17 soldiers</strong> and clears the 92 stranded iron bars. If you only want to touch the panel twice, minute 0 and minute 40 alone already capture most of it (354 tools, 98.4 % uptime).</p>
-    <p>Two things to notice in the table. The toolsmith's <em>coal</em> slider never drops below 40 and its <em>iron-bar</em> slider never drops below 40 either — both are floors, not ratios. Following the exact ρ curve down to an iron-bar 20/80 late in the game costs 2.5 points of uptime for nothing, because a capacity-limited building needs queue priority rather than a fair share. And the early rows use 3 rather than 0 on gold and weapon: identical while those buildings don't exist, but it removes the risk of leaving a 0 in place, which is unrecoverable.</p>
+    <p>Two things to notice in the table. The toolsmith's <em>coal</em> slider never drops below 40 and its <em>iron-bar</em> slider never drops below 40 either — both are floors, not ratios. Following the exact ρ curve down to an iron-bar setting of tool 20 / weapon 80 late in the game costs 2.5 points of uptime for nothing, because a capacity-limited building needs queue priority rather than a fair share. And the early rows use 3 rather than 0 on gold and weapon: identical while those buildings don't exist, but it removes the risk of leaving a 0 in place, which is unrecoverable.</p>
 
     <h3><span class="badge asm">Ceiling warning</span> 1000 by 1:40 does not fit in one sector</h3>
     <p>Your milestones imply 200 T3 between minute 35 and 60 (8/min), 200 more by 80 (10/min), then <strong>600 in the last twenty minutes — 30 per minute</strong>. That last figure needs 125.5 coal a minute, which is <strong>119 % of the 105.63/min a single economy sector can dispatch</strong>. No slider setting reaches it; the simulation tops out at 846 by minute 100 and gets to 1000 around minute 110.</p>
@@ -932,12 +945,12 @@ with  ρ = L/S :
     <div class="verdicts">
       <div class="verdict">
         <span class="stage">Coal panel · gold / iron / tool / weapon</span>
-        <h4>22 · 16 · 40 · 22</h4>
+        <h4 class="setnums"><span><i>gold</i>22</span><span><i>iron</i>16</span><span><i>tool</i>40</span><span><i>weapon</i>22</span></h4>
         <p class="note">Give the toolsmith 40 (it self-limits), then split the remaining 60 across goldsmelter, ironsmelter and weaponsmith as <strong>2 : (1+ρ) : 2</strong>. Sums to 100, so the panel will not renormalise behind you. Best in the opening, tied for best in the endgame. Arrow factory 0 unless you want explosive arrows.</p>
       </div>
       <div class="verdict">
         <span class="stage">Iron-bar panel · tool / weapon</span>
-        <h4>40 · 60</h4>
+        <h4 class="setnums"><span><i>tool</i>40</span><span><i>weapon</i>60</span></h4>
         <p class="note">Shipyard and vehicle hall at 0. Without this the coal setting above is wasted — this is the panel that actually stalls your toolsmith.</p>
       </div>
       <div class="verdict">
@@ -991,7 +1004,7 @@ D = 100 × 59 − 900 = <span class="op">5,000 deliveries</span></div>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">With two toolsmiths the coal panel becomes 22/26/29/22, then 28/24/20/28, then <strong>30/23/16/30</strong> — same order: gold, iron, tool, weapon. Each row's catch-up is around a thousand deliveries — ten minutes — which is why stepping through them is far cheaper than one big switch at the end, and why <strong>going straight to the 1:40 row on turn one is cheapest of all</strong>.</p>
+    <p style="margin-top:1.2em">With two toolsmiths the coal panel becomes gold 22 / iron 26 / tool 29 / weapon 22, then gold 28 / iron 24 / tool 20 / weapon 28, then <strong>gold 30 / iron 23 / tool 16 / weapon 30</strong>. Each row's catch-up is around a thousand deliveries — ten minutes — which is why stepping through them is far cheaper than one big switch at the end, and why <strong>going straight to the 1:40 row on turn one is cheapest of all</strong>.</p>
 
     <h3>Reading your own ledger</h3>
     <p>You cannot see the counters, but you can reconstruct all four exactly from numbers the game shows you:</p>
