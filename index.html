@@ -853,12 +853,45 @@ with  ρ = L/S :
     <p style="margin-top:1.2em">The fat slider cuts the transition debt by <strong>6.5×</strong> and — the important part — moves the freeze <em>off</em> the toolsmith and onto the iron smelter, which has a buffer and whose output was piling anyway. With a thin slider your toolsmith dies for a quarter of an hour at exactly the moment your settlement wants to grow fastest.</p>
     <p>The races land close together despite very different timings, because the faster starters produce more slowly: Maya finish first but make a tool every 377 ticks, Vikings finish last but make one every 291. Solo output ends up within 15 % across all four.</p>
 
+    <h3>Does the opening need different numbers?</h3>
+    <p>It looks like it should. Your first 200 soldiers arrive between minute 35 and 60 at roughly 8 T3/min, and at that scale a single toolsmith is <strong>0.34 tools per weapon</strong> — more than twice the 0.15 of a mature 18/min economy. The iron smelter has to cover every one of those tool bars as well as the weapon bars, so its share should be visibly larger early.</p>
+    <p>It is. Simulating exactly that window — a build sized for 8 T3/min, 25 minutes, coal demand 37.5/min, 35 % of the ceiling:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th></th><th>T3 in 25 min</th><th>Tools</th><th>Toolsmith</th><th>Idle gold bars</th></tr></thead>
+        <tbody>
+          <tr><td>40</td><td>20</td><td>0</td><td>40</td><td>no tools at all</td><td>198</td><td>0</td><td>0 %</td><td>2</td></tr>
+          <tr><td>23</td><td>14</td><td>40</td><td>23</td><td>tuned for the endgame</td><td>173</td><td>66</td><td>96.1 %</td><td>46</td></tr>
+          <tr class="hot"><td>22</td><td>16</td><td>40</td><td>22</td><td>tuned for this window</td><td>190</td><td>66</td><td>96.1 %</td><td>6</td></tr>
+          <tr><td>21</td><td>18</td><td>40</td><td>21</td><td>iron-heavier still</td><td>187</td><td>66</td><td>95.8 %</td><td>5</td></tr>
+          <tr><td>25</td><td>25</td><td>25</td><td>25</td><td>shipped default</td><td>181</td><td>61</td><td>88.3 %</td><td>24</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Two points of iron is worth <strong>17 soldiers</strong> here — about 10 % — and it drops idle gold from 46 bars to 6. With iron at 14 the smelter cannot keep both smiths in bars, the weaponsmith stalls, and gold banks up behind it. Exactly the symptom you know.</p>
+
+    <h3>But don't switch — pick the early one and keep it</h3>
+    <p>Run the <em>early</em> setting on the full endgame build and it costs nothing:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Setting</th><th>T3 (min 30–100)</th><th>Tools</th><th>Toolsmith uptime</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>22 / 16 / 40 / 22</td><td>1259</td><td>248</td><td>99.7 %</td></tr>
+          <tr><td>23 / 14 / 40 / 23</td><td>1259</td><td>248</td><td>99.4 %</td></tr>
+          <tr><td>21 / 18 / 40 / 21</td><td>1259</td><td>248</td><td>99.6 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Identical soldiers, identical tools, a hair <em>better</em> uptime. By the endgame coal supply and demand are nearly matched, so the pile cap and the free-skip rule absorb the small surplus on the iron smelter — the mistake self-corrects when the economy is big, but not when it is small.</p>
+    <p>And switching is not free: moving from 22/16 to 23/14 around the 200-soldier mark costs <strong>702 deliveries, about 7 minutes with the iron smelter frozen</strong>, to buy nothing at all. So set the early-weighted numbers on turn one and leave them.</p>
+    <p>The general rule, to derive it for a different tool count: with the toolsmith self-limiting, split whatever is left after its slider across gold, iron and weapon as <strong>2 : (1&nbsp;+&nbsp;ρ) : 2</strong>, where ρ is tools per weapon. Early ρ&nbsp;≈&nbsp;0.34, late ≈&nbsp;0.15, and the whole span from 4 to 26 T3/min only moves the iron slider between 18 and 13.</p>
+
     <h3>Recommended settings</h3>
     <div class="verdicts">
       <div class="verdict">
         <span class="stage">Coal panel · gold / iron / tool / weapon</span>
-        <h4>23 · 14 · 40 · 23</h4>
-        <p class="note">Give the toolsmith 40 (it self-limits), then split the remaining 60 across goldsmelter, ironsmelter and weaponsmith in the ratio <strong>2 : 1 : 2</strong> — the iron smelter takes the odd point because it also has to cover the toolsmith’s bars. Sums to 100, so the panel will not renormalise behind you. Arrow factory 0 unless you want explosive arrows.</p>
+        <h4>22 · 16 · 40 · 22</h4>
+        <p class="note">Give the toolsmith 40 (it self-limits), then split the remaining 60 across goldsmelter, ironsmelter and weaponsmith as <strong>2 : (1+ρ) : 2</strong>. Sums to 100, so the panel will not renormalise behind you. Best in the opening, tied for best in the endgame. Arrow factory 0 unless you want explosive arrows.</p>
       </div>
       <div class="verdict">
         <span class="stage">Iron-bar panel · tool / weapon</span>

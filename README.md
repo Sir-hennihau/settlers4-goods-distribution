@@ -6,6 +6,24 @@ and what to set them to for tier-3 soldier production.
 
 **Read it here → https://sir-hennihau.github.io/settlers4-goods-distribution/**
 
+## TL;DR — the settings
+
+For tier-3 soldiers (1 weapon + 2 gold bars), one toolsmith kept running:
+
+| panel | Gold | Iron | **Tool** | Weapon |
+|---|---|---|---|---|
+| **Coal** | 22 | 16 | **40** | 22 |
+| **Iron bars** | — | — | **40** | 60 |
+
+Arrow factory, shipyard and vehicle hall at 0. Set it on turn one and never touch it — the
+ledger is cumulative, so every mid-game tweak costs a measurable catch-up during which somebody
+gets nothing. Gold and weapon must be **equal**; that is your check that the rows are in the
+right order (the panel lists Toolsmith *above* Weaponsmith).
+
+The 40 on the toolsmith is not 40 % of your coal — a toolsmith can only eat 2.6 % of the
+dispatch ceiling, and a full building is skipped for free. It means "first in the queue whenever
+it has room", which is why it costs nothing and holds 99.7 % uptime.
+
 ## What's in it
 
 - **The two-stage solver.** Stage 1 picks the consumer building *type* from your sliders and a hidden
