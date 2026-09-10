@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Settlers IV Distributes Goods</title>
+<meta name="description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and the correct slider settings for tier-3 soldier production.">
+<meta property="og:title" content="How Settlers IV Distributes Goods">
+<meta property="og:description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and the correct slider settings for tier-3 soldier production.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%E2%9A%96%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,600..800&family=JetBrains+Mono:wght@400..700&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap">
+<style>
+/* base the Artifact runtime normally injects */
+:root{color-scheme:light dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F2F1E9}
+@media (prefers-color-scheme:dark){body{background:#13160F}}
+img{max-width:100%;height:auto}
+[hidden]{display:none!important}
+</style>
+<style>
+:root{
+  --ground:#F2F1E9;
+  --surface:#FBFAF4;
+  --surface-2:#EBE9DD;
+  --ink:#1C1F17;
+  --ink-2:#454A3C;
+  --muted:#656A59;
+  --hair:#DBD8C8;
+  --hair-2:#C8C4AF;
+  --brass:#9A6A16;
+  --crimson:#A32642;
+  --brass-wash:#9A6A1614;
+  --crimson-wash:#A3264214;
+  --code-bg:#EDEBDF;
+
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono","Cascadia Mono",Consolas,monospace;
+
+  --col:68ch;
+  --gutter:104px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#13160F;
+    --surface:#1B1F16;
+    --surface-2:#232819;
+    --ink:#E9E8DC;
+    --ink-2:#C3C4B3;
+    --muted:#969C86;
+    --hair:#2E3327;
+    --hair-2:#3D4334;
+    --brass:#B58C22;
+    --crimson:#C8455A;
+    --brass-wash:#B58C2220;
+    --crimson-wash:#C8455A20;
+    --code-bg:#1F241A;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#13160F;
+  --surface:#1B1F16;
+  --surface-2:#232819;
+  --ink:#E9E8DC;
+  --ink-2:#C3C4B3;
+  --muted:#969C86;
+  --hair:#2E3327;
+  --hair-2:#3D4334;
+  --brass:#B58C22;
+  --crimson:#C8455A;
+  --brass-wash:#B58C2220;
+  --crimson-wash:#C8455A20;
+  --code-bg:#1F241A;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.62;
+  margin:0;
+  padding-inline:20px;
+  padding-block:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:calc(var(--gutter) + var(--col) + 40px);margin:0 auto}
+
+/* ---- address-gutter grid: every claim carries the VA it came from ---- */
+.row{
+  display:grid;
+  grid-template-columns:var(--gutter) minmax(0,1fr);
+  gap:0 28px;
+  align-items:start;
+}
+.addr{
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.5;
+  letter-spacing:.02em;
+  color:var(--muted);
+  text-align:right;
+  padding-top:.55em;
+  white-space:nowrap;
+}
+.addr b{display:block;font-weight:500;color:var(--brass)}
+.addr span{display:block;font-size:10px;opacity:.8}
+@media (max-width:720px){
+  .row{grid-template-columns:1fr;gap:0}
+  .addr{text-align:left;padding-top:0;margin-bottom:.3em}
+  .addr b{display:inline}
+  .addr span{display:inline;margin-left:.6em}
+}
+
+/* ---- masthead ---- */
+header{padding-block:56px 30px;border-bottom:2px solid var(--ink);margin-bottom:0}
+.kicker{
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--crimson);margin:0 0 18px;font-weight:500;
+}
+h1{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(34px,7vw,62px);
+  line-height:1.02;
+  letter-spacing:-.025em;
+  margin:0 0 18px;
+  text-wrap:balance;
+}
+.standfirst{font-size:20px;line-height:1.5;color:var(--ink-2);margin:0;max-width:60ch}
+.byline{
+  display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:26px;
+  font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.02em;
+}
+.byline i{font-style:normal;color:var(--ink-2)}
+
+/* ---- sections ---- */
+section{padding-block:42px;border-bottom:1px solid var(--hair)}
+section:last-of-type{border-bottom:0}
+h2{
+  font-family:var(--display);font-weight:700;
+  font-size:clamp(23px,3.4vw,31px);line-height:1.12;letter-spacing:-.018em;
+  margin:0 0 6px;text-wrap:balance;
+}
+h3{
+  font-family:var(--display);font-weight:700;font-size:18px;line-height:1.25;
+  letter-spacing:-.01em;margin:30px 0 8px;
+}
+.dek{color:var(--muted);font-size:15px;margin:0 0 22px;max-width:58ch}
+p{margin:0 0 1em;max-width:var(--col)}
+p:last-child{margin-bottom:0}
+strong{font-weight:600}
+em.term{font-style:normal;font-family:var(--mono);font-size:.85em;background:var(--code-bg);
+  padding:.1em .35em;border-radius:2px;color:var(--ink-2)}
+
+/* ---- the two verdict formulas ---- */
+.verdicts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:8px}
+.verdict{
+  background:var(--surface);border:1px solid var(--hair-2);border-radius:3px;padding:20px 22px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.verdict .stage{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);
+}
+.verdict h4{font-family:var(--display);font-weight:700;font-size:16px;margin:0;letter-spacing:-.01em}
+.formula{
+  font-family:var(--mono);font-size:13.5px;line-height:1.75;color:var(--ink);
+  background:var(--code-bg);border-radius:3px;padding:12px 14px;overflow-x:auto;
+}
+.formula .op{color:var(--crimson);font-weight:500}
+.formula .cm{color:var(--muted)}
+.formula{white-space:pre-wrap}
+.formula sub{font-size:.75em}
+.verdict .note{font-size:14px;color:var(--muted);margin:0}
+.pick{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--brass);font-weight:500;
+}
+
+/* ---- memory map ---- */
+.memmap{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:6px}
+.memmap th{
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);text-align:left;font-weight:500;padding:0 14px 8px 0;border-bottom:1px solid var(--hair-2);
+}
+.memmap td{padding:10px 14px 10px 0;border-bottom:1px solid var(--hair);vertical-align:top}
+.memmap td:first-child{font-family:var(--mono);font-size:12.5px;color:var(--brass);white-space:nowrap;font-variant-numeric:tabular-nums}
+.memmap td:nth-child(2){font-family:var(--mono);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.memmap tr.hot td{background:var(--crimson-wash)}
+.memmap.slider td{font-variant-numeric:tabular-nums}
+.memmap.slider td:nth-child(-n+6){font-family:var(--mono);font-size:13px;color:var(--ink)}
+.memmap.slider th{white-space:nowrap}
+.memmap tr.hot td:nth-child(3){color:var(--ink);font-weight:600}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ---- pseudocode ---- */
+pre.code{
+  font-family:var(--mono);font-size:12.5px;line-height:1.72;
+  background:var(--surface);border:1px solid var(--hair-2);border-left:3px solid var(--brass);
+  border-radius:3px;padding:18px 20px;overflow-x:auto;margin:0;color:var(--ink-2);
+}
+pre.code b{color:var(--ink);font-weight:600}
+pre.code i{color:var(--muted);font-style:normal}
+pre.code u{text-decoration:none;color:var(--crimson);font-weight:600}
+pre.code.asm{border-left-color:var(--crimson);font-size:11.5px;line-height:1.85}
+
+.srcnote{
+  display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;
+  font-size:14px;color:var(--muted);margin:0 0 14px;max-width:var(--col);
+}
+.badge{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:500;padding:3px 8px;border-radius:2px;white-space:nowrap;flex:none;
+  color:var(--brass);border:1px solid var(--brass);
+}
+.badge.asm{color:var(--crimson);border-color:var(--crimson)}
+
+/* ---- diagram ---- */
+figure{margin:0}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:12px;max-width:62ch}
+.diagram{
+  background:var(--surface);border:1px solid var(--hair-2);border-radius:3px;padding:18px 8px;
+}
+.diagram svg{display:block;width:100%;height:auto;max-width:100%}
+
+/* ---- charts ---- */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:8px}
+.chart{background:var(--surface);border:1px solid var(--hair-2);border-radius:3px;padding:18px 16px 14px}
+.chart h4{font-family:var(--display);font-weight:700;font-size:15px;margin:0 0 2px;letter-spacing:-.01em}
+.chart .sub{font-size:13px;color:var(--muted);margin:0 0 12px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 14px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block;flex:none}
+.tip{
+  position:fixed;pointer-events:none;opacity:0;transition:opacity .1s;z-index:20;
+  background:var(--ink);color:var(--ground);font-family:var(--mono);font-size:11px;
+  padding:6px 9px;border-radius:3px;white-space:nowrap;line-height:1.5;
+}
+
+/* ---- cause list: these are distinct mechanisms, not a sequence ---- */
+.causes{display:grid;gap:2px;margin-top:8px;counter-reset:c}
+.cause{
+  background:var(--surface);border:1px solid var(--hair);padding:18px 20px;
+  display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:baseline;
+}
+.cause:first-child{border-radius:3px 3px 0 0}
+.cause:last-child{border-radius:0 0 3px 3px}
+.cause + .cause{border-top:0}
+.cause .tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--crimson);white-space:nowrap;padding-top:.35em;
+}
+.cause h4{font-family:var(--display);font-weight:700;font-size:16.5px;margin:0;letter-spacing:-.012em}
+.cause p{grid-column:2;font-size:15px;color:var(--ink-2);margin:.35em 0 0;max-width:60ch}
+@media (max-width:560px){
+  .cause{grid-template-columns:1fr}
+  .cause p{grid-column:1}
+}
+
+/* ---- plain-language on-ramp ---- */
+.plain .lead{font-size:19.5px;line-height:1.55;color:var(--ink);margin-bottom:1em}
+.plain .lead em,.steps h4 em{font-style:italic;color:var(--crimson)}
+.steps{list-style:none;padding:0;margin:16px 0 0;counter-reset:step}
+.steps li{counter-increment:step;position:relative;padding:0 0 24px 52px}
+.steps li::before{
+  content:counter(step);
+  position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;
+  display:grid;place-items:center;background:var(--ground);
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  color:var(--brass);border:1px solid var(--brass);
+}
+.steps li::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:1px;background:var(--hair-2)}
+.steps li:last-child{padding-bottom:0}
+.steps li:last-child::after{display:none}
+.steps h4{font-family:var(--display);font-weight:700;font-size:17px;margin:1px 0 5px;letter-spacing:-.012em}
+.steps p{font-size:15.5px;color:var(--ink-2);margin:0;max-width:60ch}
+
+/* ---- rules ---- */
+.rules{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:14px}
+.rules li{
+  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  font-size:15.5px;color:var(--ink-2);max-width:64ch;
+}
+.rules b{color:var(--ink);font-weight:600}
+.tick{
+  width:7px;height:7px;flex:none;background:var(--brass);border-radius:1px;
+  margin-top:.62em;transform:rotate(45deg);
+}
+
+/* ---- id tables ---- */
+.ids{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:8px}
+.idtable{background:var(--surface);border:1px solid var(--hair-2);border-radius:3px;padding:16px 18px}
+.idtable h4{
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 12px;font-weight:500;
+}
+.idtable dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:13.5px}
+.idtable dt{
+  font-family:var(--mono);font-size:12px;color:var(--brass);
+  font-variant-numeric:tabular-nums;text-align:right;
+}
+.idtable dd{margin:0;color:var(--ink-2)}
+
+footer{padding-block:38px 60px;font-size:13.5px;color:var(--muted)}
+footer p{max-width:64ch}
+footer code{font-family:var(--mono);font-size:12px;color:var(--ink-2);word-break:break-all}
+a{color:var(--crimson)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="row">
+  <div class="addr"><b>S4_Main.exe</b><span>History Edition</span></div>
+  <div>
+    <p class="kicker">Static analysis · x86 teardown</p>
+    <h1>How Settlers&nbsp;IV Distributes Goods</h1>
+    <p class="standfirst">The percentage sliders are real, but they are not a ratio of deliveries. They are a divisor in a debt ledger that is shared between goods and never reset — which is why coal and bread land where you didn't ask them to.</p>
+    <div class="byline">
+      <span><i>Binary</i> S4_Main.exe · 15,587,760 B</span>
+      <span><i>Symbols</i> S4_MainR.pdb · 125,554 publics</span>
+      <span><i>Core routine</i> 0x004D5D30</span>
+    </div>
+  </div>
+</header>
+
+<section class="row plain">
+  <div class="addr"><b>plain words</b><span>no assembly</span></div>
+  <div>
+    <h2>Start here: what the sliders actually promise</h2>
+    <p class="lead">A slider does not say <em>“send 25% of the coal here.”</em> It says <em>“this kind of building should end up having received 25% of all the coal I have ever handed out.”</em> The game keeps a tally of what it has given each kind of building, and every time a lump of coal comes free it gives it to whoever is furthest behind their promise.</p>
+    <p>That one difference — a promise measured over the whole match, rather than a ratio applied right now — is where every surprise comes from.</p>
+
+    <h3>One lump of coal, start to finish</h3>
+    <ol class="steps">
+      <li>
+        <h4>A lump of coal comes free</h4>
+        <p>Somewhere in your settlement a coal pile is sitting with nobody assigned to carry it. About once a second at normal game speed, the game picks one up and asks where it should go. Every good gets exactly one of these decisions per round — coal gets two, because it is special-cased in the code.</p>
+      </li>
+      <li>
+        <h4>Stage 1 decides <em>what kind</em> of building gets it</h4>
+        <p>This is the only step your sliders touch. The game runs down the list of coal consumers — gold smelter, iron smelter, toolsmith, weaponsmith, arrow factory — and for each one asks: <strong>how much has this kind received so far, compared to the share I promised it?</strong> Whichever kind is furthest behind wins. A kind set to 0%, one you have paused, or one whose buildings are all full is skipped.</p>
+      </li>
+      <li>
+        <h4>Stage 2 decides <em>which building</em> of that kind gets it</h4>
+        <p>Your sliders are finished; they have no say left. If stage 1 said “a weaponsmith,” stage 2 looks at all your weaponsmiths and picks the one that is <strong>emptiest and closest to the coal</strong>. Emptiness counts roughly twice as much as anything already on its way. Any building whose input pile already holds 8 coal, counting deliveries in transit, is refused outright.</p>
+      </li>
+      <li>
+        <h4>The delivery is written down</h4>
+        <p>The winning <em>kind</em> of building gets +1 on its tally. Not the individual building — the kind. That tally is exactly the number stage 1 will weigh against your slider next time round.</p>
+      </li>
+    </ol>
+
+    <h3>So how do the two stages relate?</h3>
+    <p><strong>Stage 1 obeys you. Stage 2 ignores you.</strong> Stage 1 is the fairness system, and it is the only place your percentages exist. Stage 2 is pure logistics — geography and warehouse space — and it runs identically no matter what the sliders say. If coal is reaching the right <em>type</em> of building but always the same one of them, that is stage 2 and no slider will change it. If coal is reaching the wrong type entirely, that is stage 1, and the tally is why.</p>
+
+    <h3>What the tally is really doing</h3>
+    <p>The tally is the whole mechanism, and it has three properties nobody would guess from looking at the panel:</p>
+    <ul class="rules">
+      <li><i class="tick"></i><span><b>There is one tally per kind of building — not one per good.</b> A weaponsmith has a single tally, and both coal <em>and</em> iron bars add to it. So feeding it iron makes it look “already served” to the coal system, and its coal dries up. Mines have one tally covering bread, meat and fish together.</span></li>
+      <li><i class="tick"></i><span><b>The tally is never wiped.</b> It runs for the entire match and is saved with your game. Move a slider an hour in and the game does not change the flow — it changes the target, then spends thousands of deliveries paying off the imbalance you just created before things settle.</span></li>
+      <li><i class="tick"></i><span><b>Only goods that have a slider are written down.</b> Iron ore and gold ore have no slider anywhere in the panel, so delivering them adds nothing to the tally. This is why gold and iron smelters quietly win the competition for coal: coal is the only thing on their tab.</span></li>
+    </ul>
+    <p style="margin-top:1.4em">The rest of this page is the evidence: the exact formulas, the memory they live in, the instructions that implement them, and measured results from re-running the algorithm.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x4D5F04</b><span>0x4D63AB</span></div>
+  <div>
+    <h2>The two decisions, in full</h2>
+    <p class="dek">Every delivery is two separate choices, made by two different formulas. Only the first one looks at your sliders.</p>
+    <div class="verdicts">
+      <div class="verdict">
+        <span class="stage">Stage 1 — which building <em>type</em></span>
+        <h4>The slider is a divisor, not a share</h4>
+        <div class="formula">score = (<span class="op">counter</span>[type] × 256 + 128)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;÷ sliderPercent[type]</div>
+        <p class="pick">→ lowest score wins</p>
+        <p class="note"><em class="term">counter[type]</em> is a running tally of goods already delivered to that building type. It is stored per economy sector, it is 16-bit, and it is <strong>never reset</strong> for the whole match.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">Stage 2 — which building <em>instance</em></span>
+        <h4>Then stock and distance decide</h4>
+        <div class="formula">score = 262 144 000<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× (16 − <span class="op">incoming</span> − 2×<span class="op">inStock</span>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;÷ hexDistance</div>
+        <p class="pick">→ highest score wins</p>
+        <p class="note">Distance is measured to the <strong>nearest pile of that good</strong>, not to a storehouse. A building whose input pile already holds <em class="term">inStock + incoming ≥ 8</em> is rejected outright.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x146C8A4</b><span>CEcoSector</span></div>
+  <div>
+    <h2>Where the numbers actually live</h2>
+    <p class="dek">All of it hangs off one object per <strong>economy sector</strong> — not per player. A settlement split across two disconnected areas keeps two independent sets of sliders and two independent ledgers.</p>
+    <div class="scrollx">
+      <table class="memmap">
+        <thead><tr><th>Offset</th><th>Type</th><th>What it is</th></tr></thead>
+        <tbody>
+          <tr><td>+0x130</td><td>WORD[43]</td><td>Head of the list of available piles, per good type</td></tr>
+          <tr><td>+0x188</td><td>ptr → set[43]</td><td>Buildings currently requesting each good. Drained and cleared every cycle.</td></tr>
+          <tr class="hot"><td>+0x1C4</td><td>WORD[42]</td><td>deliveryCounter, indexed by building type — the debt ledger</td></tr>
+          <tr><td>+0x218</td><td>map&lt;u8,map&lt;u8,int&gt;&gt;</td><td>CBuildingSupplyPriority — your sliders: building type → good type → percent</td></tr>
+          <tr><td>+0x224</td><td>vtbl + WORD[43]</td><td>CGoodTransportPriority — the transport-order tab (rank per good)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>The critical detail</h3>
+    <p>The ledger at <em class="term">+0x1C4</em> is indexed by <strong>building type alone</strong>. There is no good-type dimension. One weaponsmith counter is incremented by coal deliveries <em>and</em> by iron-bar deliveries. One coal-mine counter is incremented by bread, meat <em>and</em> fish. The sliders for different goods are therefore competing for the same number.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x4FE060</b><span>GameLogicTick</span></div>
+  <div>
+    <h2>The dispatch loop</h2>
+    <p class="dek">Runs once every 16 logic ticks, for every economy sector on the map. The main loop at <em class="term">0x513C80</em> paces a tick to <em class="term">0x47</em> = 71 ms at default speed (47 ms at speed 2, then <em class="term">71/(n−1)</em>), so a cycle is about 1.1 s of real time — and that is also a hard ceiling of one delivery per good per cycle, two for coal.</p>
+    <p class="srcnote"><span class="badge">Reconstructed</span> The shipped routine is 2,528 bytes of x86 with no source available. What follows is pseudocode written from the disassembly — accurate to the control flow and the arithmetic, but not the game's own text. The verbatim instructions behind the two load-bearing claims are printed below it.</p>
+    <pre class="code"><i>// CEcoSector::DistributeGoods — 0x004D5D30
+// gated by (gameManager[0x30] &amp; 0xF) == 0xF   →  1 in 16 ticks</i>
+
+<b>for</b> rank <b>in</b> 1..42:
+    good = first good whose transportRank == rank      <i>// +0x228</i>
+    <b>if</b> requestSet[good] is empty: <b>continue</b>
+
+    <i>── stage 1 · pick the consumer building TYPE ──</i>
+    best = INF ; chosen = none
+    <b>for</b> (type, percent) <b>in</b> sliders[good]:          <i>// ascending type id</i>
+        <b>if</b> percent == 0: <b>continue</b>                   <i>// 0% is fully excluded</i>
+        score = <u>(counter[type]*256 + 128) / percent</u>
+        <b>if</b> score &gt;= best: <b>continue</b>
+        <b>if</b> no <i>active</i> building of `type` is requesting: <b>continue</b>
+        best = score ; chosen = type
+
+    <i>── stage 2 · pick WHICH building of that type ──</i>
+    <b>for</b> b <b>in</b> buildings(chosen) that are requesting:
+        src  = nearestPileOf(good, b.pos)
+        dist = hexDistance(b.pos, src.pos)
+        s    = <u>262144000 * (16 - b.incoming - 2*b.inStock) / dist</u>
+    target = argmax(s)
+    <b>if</b> target.inStock + target.incoming &gt;= 8: <b>continue</b>   <i>// pile cap</i>
+
+    <b>if</b> createTransportJob(src, target):
+        <u>counter[chosen] += 1</u>                        <i>// 0x4D664C — the only write</i>
+
+    <b>if</b> good == COAL <b>and</b> firstPass: <b>redo this good once</b>  <i>// coal gets 2 jobs/cycle</i>
+    clear requestSet[good]</pre>
+    <figcaption>Hex distance uses the map's rhombic grid: <em class="term">max(|dx|,|dy|)</em> when dx and dy share a sign, <em class="term">|dx|+|dy|</em> when they don't.</figcaption>
+
+    <h3>The shipped instructions</h3>
+    <p class="srcnote"><span class="badge asm">Verbatim</span> Straight out of <em class="term">S4_Main.exe</em>. Everything above rests on these two fragments; comments are mine, the rest is the binary.</p>
+    <pre class="code asm"><i>; the score — 0x4D5EF2 .. 0x4D5F1B</i>
+004D5EF2  8b4c0dc4          mov   ecx, [ebp+ecx-0x3C]      <i>; ecx = slider percent</i>
+004D5EF6  85c9              test  ecx, ecx
+004D5EF8  0f84ca000000      je    0x4D5FC8                 <i>; 0% -&gt; score = INF, excluded</i>
+004D5EFE  8b9508fbffff      mov   edx, [ebp-0x4F8]         <i>; edx = the economy sector</i>
+004D5F04  0fb78442c4010000  <u>movzx eax, word [edx+eax*2+0x1C4]</u>  <i>; counter[buildingType]</i>
+004D5F0C  c1e008            shl   eax, 8                   <i>; x 256</i>
+004D5F0F  83e880            sub   eax, -0x80               <i>; + 128</i>
+004D5F12  99                cdq
+004D5F13  f7f9              idiv  ecx                      <i>; / percent</i>
+004D5F1B  89049a            mov   [edx+ebx*4], eax         <i>; store, lowest wins</i>
+
+<i>; the only write to the ledger in the whole binary — 0x4D662B .. 0x4D664C</i>
+004D662B  8b85c4faffff      mov   eax, [ebp-0x53C]         <i>; chosen building type, or -1</i>
+004D663D  85c0              test  eax, eax
+004D663F  782d              js    0x4D666E                 <i>; -1 (no slider entry) -&gt; no count</i>
+004D6647  83f82a            cmp   eax, 0x2A
+004D664A  7d22              jge   0x4D666E                 <i>; &gt;= 42 -&gt; no count</i>
+004D664C  66ff8443c4010000  <u>inc   word [ebx+eax*2+0x1C4]</u></pre>
+    <figcaption>Note <em class="term">sub eax,-0x80</em> — the compiler's encoding of <em>+128</em>, which is the rounding term that makes the division fair rather than always truncating down.</figcaption>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x4D5ED0</b><span>0x4D664C</span></div>
+  <div>
+    <h2>The feedback loop that breaks it</h2>
+    <p class="dek">Stage 1 divides by your slider — but the thing it divides is written by <em>every</em> good that shares a consumer.</p>
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 660 300" role="img" aria-label="Diagram: coal and iron-bar deliveries both increment the same per-building-type counter, which is then divided by the coal slider to choose the next coal consumer.">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,1 L9,5 L0,9 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g fill="none" stroke="currentColor" color="var(--hair-2)" stroke-width="1.5">
+            <path d="M150,64 L246,64" marker-end="url(#ah)" color="var(--brass)"/>
+            <path d="M150,132 L246,132" marker-end="url(#ah)" color="var(--crimson)"/>
+            <path d="M420,98 L500,98" marker-end="url(#ah)" color="var(--hair-2)"/>
+            <path d="M330,164 L330,214" marker-end="url(#ah)" color="var(--hair-2)"/>
+            <path d="M566,132 L566,244 L346,244" marker-end="url(#ah)" color="var(--brass)" stroke-dasharray="5 4"/>
+          </g>
+
+          <g font-family="JetBrains Mono, monospace" font-size="11.5">
+            <rect x="14" y="44" width="136" height="40" rx="3" fill="var(--brass-wash)" stroke="var(--brass)" stroke-width="1"/>
+            <text x="82" y="60" text-anchor="middle" fill="var(--ink)" font-size="12">coal delivery</text>
+            <text x="82" y="75" text-anchor="middle" fill="var(--muted)" font-size="10">slider says 25%</text>
+
+            <rect x="14" y="112" width="136" height="40" rx="3" fill="var(--crimson-wash)" stroke="var(--crimson)" stroke-width="1"/>
+            <text x="82" y="128" text-anchor="middle" fill="var(--ink)" font-size="12">iron-bar delivery</text>
+            <text x="82" y="143" text-anchor="middle" fill="var(--muted)" font-size="10">slider says 40%</text>
+
+            <rect x="248" y="42" width="172" height="112" rx="3" fill="var(--surface-2)" stroke="var(--hair-2)" stroke-width="1"/>
+            <text x="334" y="64" text-anchor="middle" fill="var(--muted)" font-size="9.5" letter-spacing="1.2">ECOSECTOR +0x1C4</text>
+            <text x="334" y="88" text-anchor="middle" fill="var(--ink)" font-size="13">counter[Weaponsmith]</text>
+            <text x="334" y="112" text-anchor="middle" fill="var(--crimson)" font-size="11">one 16-bit number</text>
+            <text x="334" y="132" text-anchor="middle" fill="var(--muted)" font-size="10">both arrows write here</text>
+
+            <rect x="502" y="76" width="144" height="44" rx="3" fill="var(--surface-2)" stroke="var(--hair-2)" stroke-width="1"/>
+            <text x="574" y="94" text-anchor="middle" fill="var(--ink)" font-size="12">÷ coal slider</text>
+            <text x="574" y="109" text-anchor="middle" fill="var(--muted)" font-size="10">= score, lowest wins</text>
+
+            <rect x="196" y="216" width="150" height="40" rx="3" fill="none" stroke="var(--hair-2)" stroke-width="1" stroke-dasharray="4 4"/>
+            <text x="271" y="233" text-anchor="middle" fill="var(--ink-2)" font-size="11">never reset</text>
+            <text x="271" y="248" text-anchor="middle" fill="var(--muted)" font-size="10">memset only in ctor</text>
+
+            <text x="452" y="272" text-anchor="middle" fill="var(--brass)" font-size="10.5">next coal delivery skips the weaponsmith</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>The weaponsmith's iron intake inflates the same counter the coal solver divides by. Its coal score climbs, and coal goes to the gold and iron smelters instead — the only two coal consumers that have no second slider of their own.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x4D5E6E</b><span>0x4D662B</span></div>
+  <div>
+    <h2>Which deliveries actually count</h2>
+    <p class="dek">Not everything a building receives touches the ledger — and this is the part that decides who wins.</p>
+    <p>A gold smelter also eats <strong>gold ore</strong>, and an iron smelter also eats <strong>iron ore</strong>. Those are big, constant flows, so the obvious question is why they don't inflate the smelters' counters the same way iron bars inflate the weaponsmith's.</p>
+    <p>The answer is that <strong>ore has no slider</strong>. The supply-priority map holds exactly 35 pairs, covering exactly the eight goods in the panel's top row. Ore, stone, boards, tools, weapons, sulfur and the rest appear nowhere in it. When the dispatcher reaches such a good, <em class="term">UpdateGoodDistributionValues</em> returns an empty list, and the branch at <em class="term">0x4D5E6E</em> jumps clean over stage 1: the chosen type stays at <em class="term">-1</em>, every requesting building is accepted as a candidate, and the good is routed by stage 2 alone — nearest and emptiest wins.</p>
+    <p>The increment at <em class="term">0x4D664C</em> is guarded by <em class="term">test eax,eax / js</em> on that same <em class="term">-1</em>. So a good without a slider can never advance the counter. There is exactly one instruction in the binary that writes it, and it is unreachable unless stage 1 picked a type.</p>
+    <h3>So which goods share a counter with coal?</h3>
+    <p>Only the ones that have a coal-consumer in their own slider table. Per building type, using the game's shipped defaults:</p>
+    <div class="scrollx">
+      <table class="memmap">
+        <thead><tr><th>Coal consumer</th><th>Other sliders on the same counter</th><th>Effect on its coal share</th></tr></thead>
+        <tbody>
+          <tr><td>0x13 Goldsmelter</td><td>— none</td><td>clean counter · over-served</td></tr>
+          <tr><td>0x14 Ironsmelter</td><td>— none</td><td>clean counter · over-served</td></tr>
+          <tr><td>0x15 Toolsmith</td><td>Iron bar 30 %</td><td>starved</td></tr>
+          <tr class="hot"><td>0x16 Weaponsmith</td><td>Iron bar 40 %</td><td>starved hardest</td></tr>
+          <tr class="hot"><td>0x1C Arrow Factory</td><td>Log 20 % <span style="opacity:.7">(Trojans)</span></td><td>starved by the wood economy</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Gold and iron ore are irrelevant to the ledger; iron <em>bars</em> and <em>logs</em> are what does the damage. Which consumers carry a second slider is race-dependent — building <em class="term">0x1C</em> is the Trojans' Arrow Factory, the Mayans' Ammo Maker's Works and the Vikings' Gunpowder Maker's Works, and only the first two feed it coal alongside logs.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>simulated</b><span>from 0x4D5D30</span></div>
+  <div>
+    <h2>What the defaults really deliver</h2>
+    <p class="dek">Running the extracted stage-1 algorithm over 4,000 dispatch cycles with the game's own Trojan defaults from <em class="term">Transport.cfg</em>, with the competing goods flowing alongside.</p>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--brass)"></i>Slider setting</span>
+      <span><i class="swatch" style="background:var(--crimson)"></i>Actual delivered share</span>
+    </div>
+    <div class="charts">
+      <div class="chart">
+        <h4>Coal, sliders at 20 % to all five consumers</h4>
+        <p class="sub">While iron bars and logs also flow — ore is irrelevant</p>
+        <svg id="c1" viewBox="0 0 430 268" role="img" aria-label="Coal: gold smelter and iron smelter each receive 37.5 percent instead of 20; toolsmith 25 percent; weaponsmith and arrow factory 0 percent."></svg>
+      </div>
+      <div class="chart">
+        <h4>Bread, sliders at 20 % to all five mines</h4>
+        <p class="sub">While meat and fish also flow to those mines</p>
+        <svg id="c2" viewBox="0 0 430 268" role="img" aria-label="Bread: stone mine and coal mine each receive 50 percent instead of 20; iron, gold and sulfur mines receive 0 percent."></svg>
+      </div>
+    </div>
+    <figcaption>The weaponsmith and the arrow factory receive <strong>no coal at all</strong> on a 20% slider, and three of five mines receive <strong>no bread at all</strong> on a 20% slider — purely because those consumers are already being fed a different <em>sliderable</em> good. The gold and iron smelters win precisely because ore doesn't count.</figcaption>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>mechanisms</b><span>six of them</span></div>
+  <div>
+    <h2>Why your sliders lie</h2>
+    <p class="dek">Six independent mechanisms, each verified in the disassembly. They compound.</p>
+    <div class="causes">
+      <div class="cause">
+        <span class="tag">shared ledger</span>
+        <h4>One counter per building type, shared by every good that has a slider</h4>
+        <p>The ledger is indexed by building type only. Every <em>sliderable</em> good delivered to a consumer bumps the same number, so the iron slider spends the weaponsmith's coal budget and the fish slider spends the gold mine's bread budget. Goods with no slider — ore above all — bypass the ledger entirely.</p>
+      </div>
+      <div class="cause">
+        <span class="tag">no reset</span>
+        <h4>The ledger is cumulative for the entire match</h4>
+        <p>It is zeroed only in the sector's constructor and it is written into the savegame. Moving a slider does not change the flow now — it changes the target the historical debt is measured against, so the engine first spends thousands of units repaying the imbalance you just created.</p>
+      </div>
+      <div class="cause">
+        <span class="tag">zero debt</span>
+        <h4>A consumer that receives nothing accrues no debt</h4>
+        <p>Types sitting at 0%, paused, or simply not built yet keep a counter of zero. The moment they become eligible their score is near-zero, so they take <em>everything</em> until they catch up. Build an arrow factory late and it drinks all your coal.</p>
+      </div>
+      <div class="cause">
+        <span class="tag">per type</span>
+        <h4>The percentage belongs to the type, not the building</h4>
+        <p>Stage 1 picks a building <em>type</em>; stage 2 only chooses which instance. Two weaponsmiths on a 25% coal slider share 25% between them — 12.5% each — while a single gold smelter keeps its full 25%.</p>
+      </div>
+      <div class="cause">
+        <span class="tag">free skip</span>
+        <h4>Ineligible types are skipped without paying</h4>
+        <p>A type whose buildings are all full (input pile at 8), paused, or not requesting is passed over — and its counter does not advance. It builds up a deficit while it waits, then claims a burst of deliveries the moment it frees up.</p>
+      </div>
+      <div class="cause">
+        <span class="tag">stage 2</span>
+        <h4>Distance and stock override nothing — but decide everything else</h4>
+        <p>Once the type is fixed, the slider has no further say. The instance is chosen by <em class="term">(16 − incoming − 2×inStock) ÷ distance</em> to the nearest pile of that good, so a near-empty, nearby building wins every time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>practice</b><span>what to do</span></div>
+  <div>
+    <h2>Working with it instead of against it</h2>
+    <ul class="rules">
+      <li><i class="tick"></i><span><b>Budget across goods, not within one.</b> Before setting a bread slider, look at what meat and fish are doing to the same mines. A mine on 100% fish will take almost no bread no matter where you drag the bread slider.</span></li>
+      <li><i class="tick"></i><span><b>Set your ratios early.</b> The ledger is cumulative, so a slider set in the first minutes behaves as advertised; the same slider set an hour in has thousands of units of history to fight.</span></li>
+      <li><i class="tick"></i><span><b>Expect a burst after any change.</b> Whatever you raise will be over-served until its debt catches up, then it settles. That transient is the system working, not a bug.</span></li>
+      <li><i class="tick"></i><span><b>Count buildings, not sliders.</b> A type's percentage is split across all its buildings, so adding a second weaponsmith halves each one's coal — it does not double the type's share.</span></li>
+      <li><i class="tick"></i><span><b>Expect the smelters to win coal.</b> Their ore intake carries no slider and so never touches the ledger. Their counters stay clean, and they out-compete the weaponsmith, toolsmith and arrow factory for coal every time — dial the smelters <em>down</em> if you want the smiths fed.</span></li>
+      <li><i class="tick"></i><span><b>Remember the sliders are per economy sector.</b> If your settlement is split, each part carries its own sliders and its own ledger; the panel edits whichever sector you are looking at.</span></li>
+      <li><i class="tick"></i><span><b>Keep consumers close to their supply.</b> Stage 2 divides by hex distance to the nearest pile, so a distant building of the right type loses to a near one every cycle.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>2 jobs</b><span>per 16 ticks</span></div>
+  <div>
+    <h2>The ceiling on your army</h2>
+    <p class="dek">Before any slider matters, the dispatcher itself is a hard throughput limit — and it is the number your community already measures as <em class="term">Ausreizung Tragelimit</em>.</p>
+    <p>One cycle is 16 ticks at 71 ms = 1.136 s, and it emits <strong>two coal jobs and one job of every other good</strong>, per economy sector. That is:</p>
+    <div class="verdicts">
+      <div class="verdict">
+        <span class="stage">Per economy sector</span>
+        <h4>Coal: 105.63 units / min</h4>
+        <p class="note">Every other good, sliderable or not: <strong>52.82 / min</strong>. Coal gets double because of the second-pass special case at <em class="term">0x4D6506</em>.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">A tier-3 soldier costs</span>
+        <h4>4 coal and 2 gold ore</h4>
+        <p class="note">2 gold bars (2 coal + 2 ore), 1 iron bar (1 coal), 1 weapon (1 coal). Coal caps you at 105.63/4; gold ore at 52.82/2. Both land on the same number.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">Absolute ceiling</span>
+        <h4>26.4 T3 / min / sector</h4>
+        <p class="note">1,584 an hour. 1,000 soldiers by 1:40 needs ≈19.4/min sustained over the last 40 minutes — <strong>73 % of the ceiling</strong>. Reaching it needs a second economy sector, which carries its own budget.</p>
+      </div>
+    </div>
+
+    <h3>The ceiling reproduced from the binary</h3>
+    <p>Taking the build plans and production speeds from your sheet, computing coal demand, and dividing by 105.63:</p>
+    <div class="scrollx">
+      <table class="memmap">
+        <thead><tr><th>Race</th><th>Buildings — gold / iron smelt, weapon / tool smith</th><th>Coal demand</th><th>Calculated</th><th>Your sheet</th></tr></thead>
+        <tbody>
+          <tr><td>Viking</td><td>6 / 4.3 / 4 / 1</td><td>44.81 /min</td><td>42.4 %</td><td>42 %</td></tr>
+          <tr><td>Roman</td><td>9 / 5 / 5 / 1</td><td>53.78 /min</td><td>50.9 %</td><td>51 %</td></tr>
+          <tr><td>Maya</td><td>9 / 5 / 6 / 1</td><td>49.43 /min</td><td>46.8 %</td><td>47 %</td></tr>
+          <tr class="hot"><td>Trojan</td><td>27 / 11 / 13 / 0</td><td>106.57 /min</td><td>100.9 %</td><td>101 %</td></tr>
+          <tr><td>Trojan (UBO)</td><td>13 / 7 / 6 / 2</td><td>62.89 /min</td><td>59.5 %</td><td>60 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Five for five. The 71 ms tick also reproduces your entire <em class="term">Ressource/min</em> table to within 0.0007 units. So <em>Tragelimit</em> is not a carrying-capacity limit at all — it is this dispatcher, and the base Trojan build at 101 % is asking it for more coal jobs than it can issue.</p>
+
+    <h3>Do the community patches lift it?</h3>
+    <p>No — they lift a <em>different</em> gate, and that is precisely what makes this one bind. There are two, in series:</p>
+    <div class="verdicts" style="margin:16px 0 20px">
+      <div class="verdict">
+        <span class="stage">Gate 1 · a rate · 0x4F2770</span>
+        <h4>2 coal jobs per cycle</h4>
+        <p class="note">105.63 coal/min per sector, hard-coded in the tick gate. <strong>Never patched.</strong> No number of idle carriers buys a third job in a cycle.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">Gate 2 · a supply · 0x4D4AF0</span>
+        <h4>A free carrier must exist</h4>
+        <p class="note">Each job hunts the sector's carrier list for the nearest one with the active flag set. None free → the job returns 0, <strong>the cycle slot is burned</strong>, and the ledger is <em>not</em> advanced.</p>
+      </div>
+    </div>
+    <p>In the base game the settler cap kept the carrier pool small, so <strong>gate 2</strong> bound first — that is the "only so many goods could be carried" behaviour. Settlers United raises the entity counts (<em class="term">PatchMoreSettlersAndBuildings</em>, <em class="term">PatchIncreaseBuildingLimit</em>, <em class="term">PatchFerryLimit</em>, <em class="term">IncreasedSelectionLimit</em>, all named in the plugin), so with enough settlers you can keep a carrier free for every job. Gate 2 stops binding — and gate 1 is what you hit instead.</p>
+    <p>So your sheet's number does not go stale under Settlers United. It gets <em>more</em> accurate, because only now can a build actually reach it.</p>
+    <p>One consolation in the failure path: because a carrier-starved job never reaches the increment at <em class="term">0x4D664C</em>, a carrier shortage costs you throughput but <strong>does not distort the ratios</strong>. The ledger only records deliveries that really happened, so your sliders still mean what they mean — you simply get fewer of everything.</p>
+    <p>Verified against the installed plugins: <em class="term">SettlersUnited.asi</em>, <em class="term">S4HD-Patch.asi</em>, <em class="term">S4WarriorsLib.asi</em>, <em class="term">ExtraZoom.asi</em>, <em class="term">S4HD-Manager.dll</em>, <em class="term">S4ModApi.dll</em> and <em class="term">ddraw.dll</em> contain no reference — as a virtual address, an RVA, or a <em class="term">.text</em>-relative offset — to <em class="term">0x4D5D30</em>, the <em class="term">&amp;0xF</em> gate at <em class="term">0x4F2770</em>, the 71 ms pacing at <em class="term">0x513C80</em>, the ledger increment, or the coal second-pass. The gate bytes <em class="term">83 E6 0F</em> are intact on disk, and the only transport-related strings in the whole plugin are about the transport <em>priority</em> preset UI, which writes the rank array at <em class="term">+0x228</em> and changes no rate.</p>
+    <p>So the direction of the effect is the opposite of what you might expect. In the unpatched game a low carrier cap could bind <em>below</em> 105.63 coal/min. Raising it removes that, which leaves <strong>the dispatcher as the binding ceiling</strong> — the patches make this number more relevant, not less.</p>
+    <p><span class="badge">How to falsify this</span> A build sitting at 101 % should visibly stall: coal permanently short, the smelters never all fed at once, and idle capacity in whichever type the ledger is starving. If a patched game runs the base Trojan plan without stalling, something did lift the rate and these figures need re-measuring. The one caveat I cannot close statically is a signature-scanning patch that locates the code by byte pattern rather than address — though nothing in the plugin's own list of patch names suggests one.</p>
+    <p>The way past the ceiling is not more carriers but <strong>more economy sectors</strong>: the driver at <em class="term">0x4F27C9</em> walks an array of up to 16,383 sectors and calls the dispatcher once for each, so every separate economy area carries its own full budget of 2 coal jobs per cycle.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>buildingInfo</b><span>.xml</span></div>
+  <div>
+    <h2>Why the smiths lose the coal war</h2>
+    <p class="dek">Every recipe below is read straight out of the shipped <em class="term">GameData/buildingInfo.xml</em>, not inferred.</p>
+    <div class="scrollx">
+      <table class="memmap">
+        <thead><tr><th>Building</th><th>Input piles</th><th>How many hit the ledger</th></tr></thead>
+        <tbody>
+          <tr><td>SMELTGOLD</td><td>COAL, GOLDORE</td><td>1 of 2 — ore is invisible</td></tr>
+          <tr><td>SMELTIRON</td><td>COAL, IRONORE</td><td>1 of 2 — ore is invisible</td></tr>
+          <tr class="hot"><td>WEAPONSMITH</td><td>COAL, IRONBAR</td><td>2 of 2 — both have sliders</td></tr>
+          <tr class="hot"><td>TOOLSMITH</td><td>COAL, IRONBAR</td><td>2 of 2 — both have sliders</td></tr>
+          <tr class="hot"><td>every mine</td><td>BREAD, MEAT, FISH</td><td>3 of 3 — all have sliders</td></tr>
+          <tr><td>AMMOMAKERHUT <span style="opacity:.7">(Trojan)</span></td><td>COAL, LOG, SULFUR</td><td>2 of 3 — sulfur is invisible</td></tr>
+          <tr><td>AMMOMAKERHUT <span style="opacity:.7">(Roman)</span></td><td>STONE</td><td>0 — no coal at all</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">There is the whole asymmetry. Producing one gold bar adds <strong>1</strong> to the gold smelter's tally. Producing one weapon adds <strong>2</strong> to the weaponsmith's — one for the coal, one for the iron bar. So on identical sliders the weaponsmith looks twice as well-fed as it is, and the coal solver walks away.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>the answer</b><span>coal sliders</span></div>
+  <div>
+    <h2>The correct coal sliders for T3</h2>
+    <p class="dek">Set each slider proportional to the building type's <strong>cumulative intake of every sliderable good</strong>. For the T3 chain that is pure stoichiometry, so it is the same for all four races.</p>
+    <div class="verdict" style="margin-bottom:20px">
+      <span class="stage">For S cumulative soldiers and L cumulative tools</span>
+      <div class="formula">ledger target   GS = 2S   IS = S+L   WS = 2S   TS = 2L
+slider          p(b) = 100 × target(b) ÷ Σ targets
+
+with  ρ = L/S :
+  p<sub>GS</sub> = p<sub>WS</sub> = 200 / (5 + 3ρ)
+  p<sub>IS</sub>       = 100(1 + ρ) / (5 + 3ρ)
+  p<sub>TS</sub>       = 200ρ / (5 + 3ρ)          <span class="cm">iron bars: WS : TS = S : L</span></div>
+      <p class="note">Note that <strong>the gold smelter and the weaponsmith always share the same number</strong>, at every tool rate and for every race. If your two sliders differ, they are wrong.</p>
+    </div>
+    <p class="srcnote"><span class="badge">Reading order</span> Every slider table below is in the order the coal panel lists them <strong>top to bottom on your screen</strong> — Goldsmelter, Ironsmelter, Toolsmith, Weaponsmith, Arrow Factory. That is the engine's own order too: the list is a <em class="term">std::map</em> walked by ascending building-type id (0x13, 0x14, 0x15, 0x16, 0x1C). Note the toolsmith sits <em>above</em> the weaponsmith.</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Tools per weapon</th><th>1 Goldsmelter</th><th>2 Ironsmelter</th><th>3 Toolsmith</th><th>4 Weaponsmith</th><th>5 Arrow Fact.</th><th></th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>0</td><td>40</td><td>20</td><td>0</td><td>40</td><td>0</td><td>pure T3, late game</td></tr>
+          <tr><td>0.15</td><td>37</td><td>21</td><td>6</td><td>37</td><td>0</td><td>1 toolsmith · Roman build below</td></tr>
+          <tr><td>0.25</td><td>35</td><td>22</td><td>9</td><td>35</td><td>0</td><td></td></tr>
+          <tr><td>0.31</td><td>34</td><td>22</td><td>10</td><td>34</td><td>0</td><td>2 toolsmiths</td></tr>
+          <tr><td>0.5</td><td>31</td><td>23</td><td>15</td><td>31</td><td>0</td><td></td></tr>
+          <tr><td>1.0</td><td>25</td><td>25</td><td>25</td><td>25</td><td>0</td><td>← the game's shipped default</td></tr>
+          <tr><td>∞</td><td>0</td><td>33</td><td>67</td><td>0</td><td>0</td><td>0 soldiers — tools only</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The two <strong>equal</strong> numbers are always the goldsmelter and the weaponsmith — rows 1 and 4, not 1 and 3. If your panel shows them equal, you have entered it correctly.</p>
+    <p>The shipped 25/25/25/25 is not arbitrary: it is exactly right for an economy making <strong>one tool per weapon</strong>. That is an opening assumption. Every minute you spend in the T3 endgame it drifts further from correct, and the fully-converged answer puts 40 on the goldsmelter, 20 on the ironsmelter, 40 on the weaponsmith and nothing on the toolsmith.</p>
+    <p>The tools-only row is the clearest demonstration of the distortion. To split coal <strong>50/50</strong> between the ironsmelter and the toolsmith you must set the sliders to <strong>33 and 67</strong> — because every coal the toolsmith gets is shadowed by an iron bar.</p>
+
+    <h3>Measured on your Roman planner build</h3>
+    <p>12.9 gold smelts / 7 iron smelts / 8.3 weapon smiths / 1 toolsmith, fed by 14.3 coal mines — so coal supply (77.5/min) sits just under demand (77.85/min), which is when the sliders actually bind. 60 minutes, with the iron-bar panel set to 87 weaponsmith / 13 toolsmith:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>which setting</th><th>T3 soldiers</th><th>Idle gold bars</th><th>Idle iron bars</th></tr></thead>
+        <tbody>
+          <tr><td>46</td><td>27</td><td>4</td><td>23</td><td>recipe-proportional</td><td>913</td><td>343</td><td>114</td></tr>
+          <tr><td>50</td><td>20</td><td>5</td><td>25</td><td>"gold needs the most"</td><td>915</td><td>339</td><td>92</td></tr>
+          <tr><td>25</td><td>25</td><td>25</td><td>25</td><td>shipped default</td><td>1042</td><td>50</td><td>1</td></tr>
+          <tr class="hot"><td>37</td><td>21</td><td>6</td><td>37</td><td>ledger-corrected</td><td>1067</td><td>27</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The intuitive split costs you <strong>17 % of your army</strong> and parks 343 gold bars and 114 iron bars in storage — exactly the "I have no weapons and everything else is full" failure. The corrected split ends the hour with 27 spare gold bars out of 2,100 produced: 99 % efficiency.</p>
+    <p><span class="badge">But read the next section first</span> That row maximises <em>soldiers</em>. It is not what you should actually play, because a 6 on the toolsmith leaves it dry a quarter of the time — and tools are worth more than soldiers. The recommended setting is below.</p>
+    <p><span class="badge">Caveat</span> That gap is largest when coal is tight. If you are sitting on a coal buffer, or your mines out-produce your smelters, the pile cap of 8 papers over a bad setting — a full building is skipped and the coal goes elsewhere anyway. In a buffered run the same comparison narrows to about 2 %. <strong>The sliders bite exactly when you are coal-limited, which is exactly when it matters.</strong></p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>always on</b><span>the toolsmith</span></div>
+  <div>
+    <h2>Keeping the toolsmith running</h2>
+    <p class="dek">Tools are growth — builders, diggers, woodcutters, miners. A stalled toolsmith costs more than a stalled weaponsmith, so it should never be the thing that starves. The common 40 % setting is <strong>right</strong>, and the mechanism explains why it is also nearly free.</p>
+
+    <h3>A fat toolsmith slider does not take 40 % of your coal</h3>
+    <p>One Roman toolsmith consumes 2.74 coal a minute. That is <strong>2.6 % of the dispatcher's 105.63/min ceiling</strong>. It cannot physically absorb 40 %: its input pile caps at 8, and a full building is skipped without cost, so the surplus flows straight past it to the smelters. Two toolsmiths still only want 5.2 %.</p>
+    <p>So 40 on the toolsmith does not mean "40 % of my coal goes to tools". It means <strong>"the toolsmith is first in the queue whenever it has room"</strong> — which is exactly the property you want, and at full coal supply it costs nothing at all. Simulating the Roman planner build from minute 30 to minute 100:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Iron-bar panel<br>tool / weapon</th><th>Tools made</th><th>Toolsmith uptime</th><th>T3 soldiers</th></tr></thead>
+        <tbody>
+          <tr><td>40</td><td>20</td><td>0</td><td>40</td><td>0 / 100</td><td>0</td><td>0 %</td><td>1259</td></tr>
+          <tr><td>37</td><td>21</td><td>6</td><td>37</td><td>13 / 87</td><td>201</td><td>75.2 %</td><td>1259</td></tr>
+          <tr><td>32</td><td>16</td><td>20</td><td>32</td><td>25 / 75</td><td>233</td><td>91.6 %</td><td>1259</td></tr>
+          <tr class="hot"><td>23</td><td>13</td><td>40</td><td>23</td><td>40 / 60</td><td>248</td><td>99.4 %</td><td>1259</td></tr>
+          <tr><td>23</td><td>13</td><td>40</td><td>23</td><td>13 / 87</td><td>198</td><td>73.5 %</td><td>1259</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em"><strong>Identical soldier output in every row.</strong> Going from 6 to 40 on the toolsmith buys 47 extra tools and takes uptime from 75 % to 99 % for free. Everything the toolsmith cannot swallow keeps flowing to the smelters, so there is no reason to be stingy.</p>
+
+    <h3>The thing that actually starves it is iron bars</h3>
+    <p>Look at the last row. Coal slider 40, iron-bar slider 13 — and uptime collapses back to 73.5 %. Breaking the stalls down by cause, at a 6 coal slider the toolsmith is dry on coal only <strong>2.7 %</strong> of cycles but dry on <strong>iron bars 24.8 %</strong> of them.</p>
+    <p>This is the single most common way the toolsmith dies, and it is invisible: you see coal piled up outside a toolsmith that is not working, conclude the coal slider is fine, and never look at the other panel. A tool costs one coal <em>and</em> one iron bar, and the iron-bar panel has its own ledger with the weaponsmith taking 87 % of it by default.</p>
+    <p><strong>Be generous on both panels.</strong> The toolsmith needs about 2.74 bars/min out of the ~21 your iron smelts produce — 13 % — so a 40 % iron-bar slider is self-limiting in exactly the same way, and equally free.</p>
+
+    <h3>When a fat slider still fails</h3>
+    <ul class="rules">
+      <li><i class="tick"></i><span><b>Thin iron-bar slider.</b> By far the most common. Widen both panels or neither.</span></li>
+      <li><i class="tick"></i><span><b>Set to 0.</b> A 0 % type is excluded from the lookup outright, keeps its debt frozen forever, and can never work its way back. There is no situation in which 0 on the toolsmith is correct.</span></li>
+      <li><i class="tick"></i><span><b>Cutting it mid-game.</b> Lowering the slider after a tool rush freezes the toolsmith for thousands of deliveries — see the debt arithmetic below. A fat slider that you never touch avoids this entirely.</span></li>
+      <li><i class="tick"></i><span><b>Genuine coal collapse.</b> Robust: at 35 % of normal coal supply the fat setting still holds <strong>96.9 %</strong> uptime. It only fails once total coal drops below the toolsmith's own 2.74/min — about <em>half of one coal mine</em>.</span></li>
+      <li><i class="tick"></i><span><b>Carrier shortage.</b> Gate 2 — the job fails and the slot is burned no matter what the slider says.</span></li>
+      <li><i class="tick"></i><span><b>Wrong economy sector.</b> Sliders and ledger are per sector. A toolsmith in a sector with no coal cannot be helped by any setting.</span></li>
+      <li><i class="tick"></i><span><b>Distance.</b> Stage 2 divides by hex distance to the nearest pile, so a toolsmith far from coal refills more slowly and burns its 8-deep buffer — roughly 3 minutes of production — during any interruption.</span></li>
+    </ul>
+
+    <h3>What it costs when coal really is short</h3>
+    <p>This is where you are trading, and the trade is the one you want:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Coal supply</th><th>Setting</th><th>Tools</th><th>Uptime</th><th>T3</th><th>Trade</th></tr></thead>
+        <tbody>
+          <tr><td>100 %</td><td>tool 6 → tool 40</td><td>201 → 248</td><td>75 → 99 %</td><td>1259 → 1259</td><td>free</td></tr>
+          <tr><td>60 %</td><td>tool 6 → tool 40</td><td>131 → 248</td><td>39 → 99 %</td><td>896 → 760</td><td>+117 tools, −136 T3</td></tr>
+          <tr><td>35 %</td><td>tool 6 → tool 40</td><td>84 → 243</td><td>14 → 97 %</td><td>587 → 406</td><td>+159 tools, −181 T3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Consistently about <strong>1.15 soldiers per extra tool</strong> once coal is scarce. Not because a tool costs more coal than half a soldier — it doesn't — but because it eats an <em>iron bar</em>, and every bar the toolsmith takes is a weapon the weaponsmith cannot make. If you believe a tool is worth more than a soldier, and early it plainly is, the fat slider is the correct call and the engine will enforce it for you.</p>
+
+    <h3>It also pre-pays the transition debt</h3>
+    <p>A toolsmith finishing early runs alone for twenty minutes or more, piling up ledger while nothing else exists. What happens when the military comes online depends entirely on how wide you left its slider. Taking your race timings, with the military starting at minute 30:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Race</th><th>Toolsmith done</th><th>Solo run</th><th>Thin slider (tool 6)</th><th>Fat slider (tool 40)</th></tr></thead>
+        <tbody>
+          <tr><td>Maya</td><td>7–9 min</td><td>22 min</td><td>1,494 deliveries · <strong>toolsmith frozen ≈15 min</strong></td><td>231 · iron smelt frozen ≈2 min</td></tr>
+          <tr><td>Roman</td><td>8–10 min</td><td>21 min</td><td>1,745 · <strong>toolsmith frozen ≈18 min</strong></td><td>270 · iron smelt frozen ≈3 min</td></tr>
+          <tr><td>Trojan</td><td>8–10 min</td><td>21 min</td><td>1,548 · <strong>toolsmith frozen ≈16 min</strong></td><td>240 · iron smelt frozen ≈2 min</td></tr>
+          <tr><td>Viking</td><td>11–13 min</td><td>18 min</td><td>1,585 · <strong>toolsmith frozen ≈16 min</strong></td><td>245 · iron smelt frozen ≈2 min</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The fat slider cuts the transition debt by <strong>6.5×</strong> and — the important part — moves the freeze <em>off</em> the toolsmith and onto the iron smelter, which has a buffer and whose output was piling anyway. With a thin slider your toolsmith dies for a quarter of an hour at exactly the moment your settlement wants to grow fastest.</p>
+    <p>The races land close together despite very different timings, because the faster starters produce more slowly: Maya finish first but make a tool every 377 ticks, Vikings finish last but make one every 291. Solo output ends up within 15 % across all four.</p>
+
+    <h3>Recommended settings</h3>
+    <div class="verdicts">
+      <div class="verdict">
+        <span class="stage">Coal panel · gold / iron / tool / weapon</span>
+        <h4>23 · 13 · 40 · 23</h4>
+        <p class="note">Give the toolsmith 40 (it self-limits), then split the remaining 60 in the ratio <strong>2 : 1 : 2</strong> across goldsmelter, ironsmelter, weaponsmith. Arrow factory 0 unless you want explosive arrows.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">Iron-bar panel · tool / weapon</span>
+        <h4>40 · 60</h4>
+        <p class="note">Shipyard and vehicle hall at 0. Without this the coal setting above is wasted — this is the panel that actually stalls your toolsmith.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">Set it once</span>
+        <h4>Minute 0, then never</h4>
+        <p class="note">Two toolsmiths need no change — the slider is per building <em>type</em>, and two of them still only want 5.2 % of the ceiling while doubling your buffer to 16 units. Strictly more robust.</p>
+      </div>
+    </div>
+    <p style="margin-top:1.4em">The gold-and-weapon pair stays equal at 23 each, so the 2 gold : 1 weapon output ratio is preserved and nothing piles. You give up nothing at full coal, you keep the toolsmith at 99 % uptime, and when coal does run short the engine automatically protects tools ahead of soldiers — which is the priority you wanted in the first place.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x4D5EAD</b><span>the debt</span></div>
+  <div>
+    <h2>Tweaking mid-game: paying the debt</h2>
+
+    <p class="srcnote"><span class="badge">In plain words</span></p>
+    <p class="lead">The slider is not a tap you open and close. It is a <em>finish line for the whole match</em>. When you move it, the game does not change the flow — it changes the target and then sprints at it. Whichever building type is now <em>ahead</em> of its new share receives absolutely nothing until the others have caught up.</p>
+    <p>So a slider change never takes effect immediately, and the bigger the change, the longer the game spends in a state that looks nothing like your sliders. Nothing is wasted — the totals do come out right in the end — but if you keep reacting to shortages by nudging sliders, you spend the entire game in transients and never see the ratio you asked for.</p>
+    <p>The safe way to use them: decide what the <em>whole game</em> should look like — how many soldiers, how many tools — set the sliders to that once, and leave them alone. The early tool rush still happens by itself, because the gold smelter and weaponsmith don't exist yet and the game skips building types that can't accept anything.</p>
+
+    <h3>In detail</h3>
+    <p class="srcnote"><span class="badge asm">The arithmetic</span></p>
+    <p>Stage 1 always drives the ledger toward <em class="term">N(b) ∝ p(b)</em>. That is the whole behaviour: <strong>the sliders describe the cumulative split the engine is aiming at</strong>, and the instantaneous flow only equals the slider ratio once the ledger has converged there.</p>
+    <p>Change the sliders when the ledger stands at N⁰, and convergence needs <em class="term">N⁰(b) + Δ(b) = λ·p(b)</em> with every <em class="term">Δ(b) ≥ 0</em> — deliveries can only be added, never taken back. That forces</p>
+    <div class="formula" style="max-width:var(--col)">λ = max<sub>b</sub> ( N⁰(b) / p(b) )
+
+<span class="op">D</span> = 100·λ − Σ<sub>b</sub> N⁰(b)     <span class="cm">deliveries before the new ratio governs</span></div>
+    <p style="margin-top:1.2em">The type that attains that maximum is the one that is over-served, and it receives <strong>nothing at all</strong> for the whole of D. Everyone else shares D between them in proportion to their sliders.</p>
+
+    <h3>The trap, with numbers</h3>
+    <p>Rush 300 tools before building any military. The ledger is then goldsmelter 0, ironsmelter 300, weaponsmith 0, <strong>toolsmith 600</strong> — remember a tool costs the toolsmith 2 ledger points, one for coal and one for the iron bar. Now switch to the 1,000-soldier setting (gold 34, iron 22, tool 10, weapon 34):</p>
+    <div class="formula" style="max-width:var(--col)">λ = max( gold 0/34 , iron 300/22 , <span class="op">tool 600/10</span> , weapon 0/34 ) = 59
+D = 100 × 59 − 900 = <span class="op">5,000 deliveries</span></div>
+    <p style="margin-top:1.2em">At roughly 99 deliveries a minute that is <strong>51 minutes during which the toolsmith receives no coal and no iron whatsoever</strong>. Players read that as "my toolsmith is broken." It is the ledger repaying a debt you took out during the rush.</p>
+    <p>Set that same row at minute 0 instead and the cost is zero. Simulating a Roman opening — 2 iron smelts and 1 toolsmith for 30 minutes, then the full build — the set-once run and the rush-then-switch run produce <em>identical</em> output (81 tools at the switch, 250 tools and 1,259 T3 at 100 minutes), because during the rush the sliders are irrelevant: the gold smelter and weaponsmith don't exist, and <strong>ineligible types are skipped for free</strong>. The rush is given to you by the eligibility rule, not by the sliders.</p>
+    <p>The one setting that does real damage is dropping the <strong>toolsmith to 0</strong> after the rush (gold 40, iron 20, tool 0, weapon 40). Same simulation: tools collapse from 250 to 90 and 163 iron bars pile up unused, because a 0 % type is excluded outright and can never work off its debt.</p>
+
+    <h3>The schedule, by soldier count</h3>
+    <p>Set the sliders from the totals you are <em>aiming at</em>, not the ones you have. Roman, one toolsmith — again in panel order, toolsmith third:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Target</th><th>T3</th><th>Tools</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">Coal panel</th><th colspan="2" style="text-align:center;border-bottom:1px solid var(--hair-2)">Iron-bar panel</th><th>Catch-up on switching</th></tr>
+        <tr><th></th><th></th><th></th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Tool</th><th>Weapon</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>opening</td><td>0</td><td>120</td><td>0</td><td>33</td><td>67</td><td>0</td><td>100</td><td>0</td><td>—</td></tr>
+          <tr><td>60 min</td><td>250</td><td>165</td><td>29</td><td>24</td><td>19</td><td>29</td><td>40</td><td>60</td><td>909, toolsmith frozen</td></tr>
+          <tr><td>80 min</td><td>600</td><td>215</td><td>33</td><td>22</td><td>12</td><td>33</td><td>26</td><td>74</td><td>1,052, toolsmith frozen</td></tr>
+          <tr class="hot"><td>1:40</td><td>1000</td><td>260</td><td>35</td><td>22</td><td>9</td><td>35</td><td>21</td><td>79</td><td>1,135, toolsmith frozen</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">With two toolsmiths the coal panel becomes 22/26/29/22, then 28/24/20/28, then <strong>30/23/16/30</strong> — same order: gold, iron, tool, weapon. Each row's catch-up is around a thousand deliveries — ten minutes — which is why stepping through them is far cheaper than one big switch at the end, and why <strong>going straight to the 1:40 row on turn one is cheapest of all</strong>.</p>
+
+    <h3>Reading your own ledger</h3>
+    <p>You cannot see the counters, but you can reconstruct all four exactly from numbers the game shows you:</p>
+    <ul class="rules">
+      <li><i class="tick"></i><span><b>Gold smelter</b> = 2 × (T3 soldiers built) + gold bars in store</span></li>
+      <li><i class="tick"></i><span><b>Weaponsmith</b> = 2 × [ (T3 soldiers built) + weapons in store ]</span></li>
+      <li><i class="tick"></i><span><b>Iron smelter</b> = weapons made + tools made + iron bars in store</span></li>
+      <li><i class="tick"></i><span><b>Toolsmith</b> = 2 × (tools made)</span></li>
+    </ul>
+    <p style="margin-top:1.2em">Divide each by its slider. If the four numbers are equal, the ledger has converged and you are getting the ratio you set. If one is far higher than the others, that type is the one currently being starved — and the formula above tells you how many deliveries are left to go.</p>
+    <p><span class="badge">Source note</span> The per-building production speeds are from your sheet, not the binary — <em class="term">buildingInfo.xml</em> only carries a small <em class="term">productiondelay</em>, with the real cycle length spread across the job animations in <em class="term">jobInfo.xml</em>. What is verified here from the shipped files is the 71 ms tick, the 16-tick dispatch cycle, the double coal pass, every input recipe, and the ledger arithmetic. Since your table reproduces the tick rate to four decimals, any patch drift in it is small — but the slider formulas above depend only on the recipes, so they hold regardless.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="addr"><b>0x4C53E0</b><span>+ race variants</span></div>
+  <div>
+    <h2>Verified type IDs</h2>
+    <p class="dek">Recovered from the four race default-initialisers, cross-referenced against the key names in <em class="term">Config/Transport.cfg</em>, and the building names resolved through the game's own string table in <em class="term">Txt/s4_texts.dat0</em>.</p>
+    <div class="ids">
+      <div class="idtable">
+        <h4>The eight goods with sliders</h4>
+        <dl>
+          <dt>9</dt><dd>Bread</dd>
+          <dt>10</dt><dd>Coal <span style="color:var(--crimson)">· dispatched twice per cycle</span></dd>
+          <dt>11</dt><dd>Fish</dd>
+          <dt>16</dt><dd>Grain</dd>
+          <dt>20</dt><dd>Iron bar</dd>
+          <dt>22</dt><dd>Log</dd>
+          <dt>24</dt><dd>Meat</dd>
+          <dt>36</dt><dd>Water</dd>
+        </dl>
+        <p style="font-size:13px;color:var(--muted);margin:14px 0 0;max-width:none">Every other good — iron ore, gold ore, sulfur, stone, boards, tools, weapons — has no entry, skips stage 1, and never touches the ledger.</p>
+      </div>
+      <div class="idtable">
+        <h4>Consumer building types</h4>
+        <dl>
+          <dt>0x03</dt><dd>Sawmill</dd>
+          <dt>0x09</dt><dd>Grain Mill</dd>
+          <dt>0x0A</dt><dd>Bakery</dd>
+          <dt>0x0C</dt><dd>Animal Ranch</dd>
+          <dt>0x0D</dt><dd>Donkey Ranch</dd>
+          <dt>0x0E</dt><dd>Stone Mine</dd>
+          <dt>0x0F</dt><dd>Iron Mine</dd>
+          <dt>0x10</dt><dd>Gold Mine</dd>
+          <dt>0x11</dt><dd>Coal Mine</dd>
+          <dt>0x12</dt><dd>Sulfur Mine</dd>
+        </dl>
+      </div>
+      <div class="idtable">
+        <h4>…continued</h4>
+        <dl>
+          <dt>0x13</dt><dd>Goldsmelter</dd>
+          <dt>0x14</dt><dd>Ironsmelter</dd>
+          <dt>0x15</dt><dd>Toolsmith</dd>
+          <dt>0x16</dt><dd>Weaponsmith</dd>
+          <dt>0x17</dt><dd>Vehicle Hall</dd>
+          <dt>0x19</dt><dd>Charcoal Kiln</dd>
+          <dt>0x1C</dt><dd>Arrow Factory <span style="opacity:.65">/ Ammo / Gunpowder</span></dd>
+          <dt>0x1F</dt><dd>Shipyard</dd>
+          <dt>0x25</dt><dd>Tequila Distillery</dd>
+          <dt>0x27</dt><dd>Meadery</dd>
+        </dl>
+      </div>
+    </div>
+    <h3>The write path, for anyone patching it</h3>
+    <p>A slider drag is normalised to a sum of 100 in <em class="term">0x4EBDA0</em>, packed into a network event, and applied in <em class="term">CNetInputProcessor::Process</em> at <em class="term">0x4F6748</em>, which calls the map setter at <em class="term">0x4C5330</em> with <em class="term">(buildingType, goodType, percent)</em>. The single instruction that advances the ledger is <em class="term">inc word ptr [ebx+eax*2+0x1C4]</em> at <em class="term">0x4D664C</em>.</p>
+  </div>
+</section>
+
+<footer class="row">
+  <div class="addr"><b>method</b></div>
+  <div>
+    <p><strong>How this was established.</strong> The shipped <code>S4_MainR.pdb</code> is a public-symbol PDB carrying 125,554 named addresses, including <code>CBuildingSupplyPriority</code>, <code>UpdateGoodDistributionValues</code> and <code>CGoodTransportPriority</code>. Those names anchored the search; everything above was then read directly out of the disassembly at the addresses cited in the left margin. The measured shares come from re-implementing stage 1 exactly as disassembled and running it over 4,000 cycles.</p>
+    <p style="margin-top:1em">No game file was modified. Analysis ran against copies of <code>S4_Main.exe</code> and <code>S4_MainR.pdb</code> held outside the game directory.</p>
+  </div>
+</footer>
+
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  var tip=document.getElementById("tip");
+  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e;}
+
+  // rounded-top bar anchored to the baseline
+  function barPath(x,y,w,h,r){
+    if(h<=0.5) return "";
+    r=Math.min(r,w/2,h);
+    return "M"+x+","+(y+h)+" L"+x+","+(y+r)+" Q"+x+","+y+" "+(x+r)+","+y+
+           " L"+(x+w-r)+","+y+" Q"+(x+w)+","+y+" "+(x+w)+","+(y+r)+" L"+(x+w)+","+(y+h)+" Z";
+  }
+
+  function draw(id, cats, setVals, actVals){
+    var svg=document.getElementById(id);
+    if(!svg) return;
+    var W=430,H=268, L=40,R=418, T=16, B=206;
+    var MAX=50, ph=B-T;
+    var y=function(v){return B - v*ph/MAX;};
+
+    // gridlines + y labels (every tick names a value the chart reaches)
+    for(var v=0;v<=MAX;v+=10){
+      svg.appendChild(el("line",{x1:L,x2:R,y1:y(v),y2:y(v),
+        stroke:"var(--hair)","stroke-width":v===0?1.4:1}));
+      var t=el("text",{x:L-9,y:y(v)+4,"text-anchor":"end",
+        "font-family":"JetBrains Mono, monospace","font-size":"10.5",fill:"var(--muted)"});
+      t.textContent=v+"%"; svg.appendChild(t);
+    }
+
+    var n=cats.length, span=(R-L)/n;
+    var bw=Math.min(26,(span-14)/2), gap=2;
+    for(var i=0;i<n;i++){
+      var cx=L+span*i+span/2;
+      var x1=cx-bw-gap/2, x2=cx+gap/2;
+      [[x1,setVals[i],"var(--brass)","Slider setting"],
+       [x2,actVals[i],"var(--crimson)","Actual delivered"]].forEach(function(b){
+        var h=B-y(b[1]);
+        if(h>0.5){
+          var p=el("path",{d:barPath(b[0],y(b[1]),bw,h,4),fill:b[2]});
+          p.style.cursor="default";
+          svg.appendChild(p);
+          (function(node,label,val,cat){
+            node.addEventListener("pointerenter",function(e){
+              tip.textContent=cat+" · "+label+": "+val+"%";
+              tip.style.opacity="1";
+            });
+            node.addEventListener("pointermove",function(e){
+              tip.style.left=Math.min(e.clientX+14, innerWidth-tip.offsetWidth-8)+"px";
+              tip.style.top=(e.clientY-34)+"px";
+            });
+            node.addEventListener("pointerleave",function(){tip.style.opacity="0";});
+          })(p,b[3],b[1],cats[i].join(" "));
+        }
+        // value label in text ink, not the series color
+        var lab=el("text",{x:b[0]+bw/2,y:(h>16?y(b[1])-6:B-6),"text-anchor":"middle",
+          "font-family":"JetBrains Mono, monospace","font-size":"10.5",
+          "font-variant-numeric":"tabular-nums",
+          fill:h>16?"var(--ink-2)":"var(--muted)"});
+        lab.textContent=b[1]+"%";
+        svg.appendChild(lab);
+      });
+
+      cats[i].forEach(function(line,k){
+        var t=el("text",{x:cx,y:B+22+k*13,"text-anchor":"middle",
+          "font-family":"JetBrains Mono, monospace","font-size":"10.5",fill:"var(--ink-2)"});
+        t.textContent=line; svg.appendChild(t);
+      });
+    }
+  }
+
+  draw("c1",[["Gold","smelter"],["Iron","smelter"],["Tool-","smith"],["Weapon-","smith"],["Arrow","factory"]],
+       [20,20,20,20,20],[37.5,37.5,25,0,0]);
+  draw("c2",[["Stone","mine"],["Iron","mine"],["Gold","mine"],["Coal","mine"],["Sulfur","mine"]],
+       [20,20,20,20,20],[50,0,0,50,0]);
+})();
+</script>
+</body>
+</html>
