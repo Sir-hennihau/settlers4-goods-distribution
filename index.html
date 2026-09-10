@@ -576,6 +576,46 @@ a{color:var(--crimson)}
 </section>
 
 <section class="row">
+  <div class="addr"><b>0x56FCFD</b><span>0x4D64C1</span></div>
+  <div>
+    <h2>Does one building hog everything?</h2>
+    <p class="dek">Yes — in runs, and the run length is exactly computable. Stage&nbsp;1 only ever names a building <em>type</em>; stage&nbsp;2 then picks one instance of it, and nothing stops it picking the same one again next cycle. Two things bound it.</p>
+    <p>The first is that the moment a job is created, <em class="term">inc byte ptr [esi+0x43]</em> at <em class="term">0x56FCFD</em> raises the target's <strong>on-the-way</strong> count — before the carrier takes a step. That drops its score by one sixteenth immediately, so the next cycle re-evaluates against a slightly less attractive building. The second is the hard refusal at <em class="term">0x4D64C1</em>: once stock&nbsp;+&nbsp;on-the-way reaches <strong>8</strong>, the building is out of the running entirely.</p>
+    <p>Put those together with the score and the run length falls out. A near building keeps winning while <em class="term">(16 − k)/d<sub>near</sub> &gt; 16/d<sub>far</sub></em>, so:</p>
+    <div class="formula" style="max-width:var(--col)">consecutive deliveries to the nearer building
+   = min( 8 , ⌈ 16 × (1 − d<span class="cm">near</span> / d<span class="cm">far</span>) ⌉ )</div>
+    <p style="margin-top:1.2em">Simulating stage&nbsp;2 with two buildings of the same type — A near, B far, neither able to consume because their second input is missing:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>A at</th><th>B at</th><th>Order of the first 16 deliveries</th><th>Run to A</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>11</td><td>A A B A B A B A B A B A B B B A</td><td>2</td></tr>
+          <tr><td>10</td><td>12</td><td>A A A B A B A B A B A B B B B A</td><td>3</td></tr>
+          <tr><td>10</td><td>15</td><td>A A A A A A B A B B A B B B B B</td><td>6</td></tr>
+          <tr class="hot"><td>10</td><td>20</td><td>A A A A A A A A B B B B B B B B</td><td>8 — A fills completely first</td></tr>
+          <tr class="hot"><td>10</td><td>30</td><td>A A A A A A A A B B B B B B B B</td><td>8 — A fills completely first</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">So your instinct is right: <strong>once one building is roughly twice as far from the goods as another, the near one is filled to its cap of 8 before the far one receives a single unit.</strong> Below that ratio it interleaves, and once both are working and draining their piles the long-run split is near enough even — 51/49 at a 3:1 distance ratio — because the stock term counts double and pulls a full building down fast.</p>
+
+    <h3>The version of this that actually hurts</h3>
+    <p>The dangerous case is not two working buildings. It is one that <em>cannot</em> work sitting closer to the goods than one that can:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Setup</th><th>Order of deliveries</th></tr></thead>
+        <tbody>
+          <tr><td>working smith at 10, stalled smith at 12</td><td>A A A B A B A B A B A B B A B B A A</td></tr>
+          <tr class="hot"><td>working smith at 20, <strong>stalled smith at 10</strong></td><td>B B B B B B B B A A A A A A A A</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">A weaponsmith with no iron bars, standing near the coal, takes <strong>eight coal in a row</strong> before a working weaponsmith further away gets one — and then holds those eight indefinitely, because it never consumes them and never drops back under the cap. Every stalled building of a type permanently sequesters 8 units of whatever it eats.</p>
+    <p>That is bounded, which is why it is a nuisance rather than a catastrophe: 8 units per stalled building, no more. But it is also why the iron-bar panel matters so much. Starve your smiths of bars and you do not just lose their output — they sit there holding coal that a working smith could have used, and no coal slider can dislodge them.</p>
+    <p><span class="badge">What to do</span> Nothing in the sliders fixes this; it is a stage-2 effect and stage&nbsp;2 ignores them. Keep the second input flowing (that is the iron-bar setting), and when you place a new smelter or smith, remember that <em>distance to the nearest pile of the good</em> is what stage&nbsp;2 measures — not distance to a storehouse, and not distance between buildings.</p>
+  </div>
+</section>
+<section class="row">
   <div class="addr"><b>simulated</b><span>from 0x4D5D30</span></div>
   <div>
     <h2>What the defaults really deliver</h2>
