@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How Settlers IV Distributes Goods</title>
-<meta name="description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and the correct slider settings for tier-3 soldier production.">
+<meta name="description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and a minute-by-minute slider schedule for tier-3 soldier production.">
 <meta property="og:title" content="How Settlers IV Distributes Goods">
-<meta property="og:description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and the correct slider settings for tier-3 soldier production.">
+<meta property="og:description" content="Reverse-engineered account of how The Settlers IV (History Edition) decides where coal, bread and every other good goes: the two-stage solver, the shared delivery ledger, the 105.63 coal/min dispatch ceiling, and a minute-by-minute slider schedule for tier-3 soldier production.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%E2%9A%96%3C/text%3E%3C/svg%3E">
@@ -885,6 +885,48 @@ with  ρ = L/S :
     <p style="margin-top:1.2em">Identical soldiers, identical tools, a hair <em>better</em> uptime. By the endgame coal supply and demand are nearly matched, so the pile cap and the free-skip rule absorb the small surplus on the iron smelter — the mistake self-corrects when the economy is big, but not when it is small.</p>
     <p>And switching is not free: moving from 22/16 to 23/14 around the 200-soldier mark costs <strong>702 deliveries, about 7 minutes with the iron smelter frozen</strong>, to buy nothing at all. So set the early-weighted numbers on turn one and leave them.</p>
     <p>The general rule, to derive it for a different tool count: with the toolsmith self-limiting, split whatever is left after its slider across gold, iron and weapon as <strong>2 : (1&nbsp;+&nbsp;ρ) : 2</strong>, where ρ is tools per weapon. Early ρ&nbsp;≈&nbsp;0.34, late ≈&nbsp;0.15, and the whole span from 4 to 26 T3/min only moves the iron slider between 18 and 13.</p>
+
+    <h3>The clock schedule — you cannot see the ledger, so go by the minute</h3>
+    <p>Nothing in the game shows you how much a building has already received, so tuning by feel is hopeless. But the ledger is a deterministic function of what you have produced, so the clock is a perfectly good proxy. Everything below is Roman with one toolsmith online at minute 9, aiming at your milestones.</p>
+    <p>The quantity that drives it is <strong>ρ = cumulative tools ÷ cumulative weapons</strong>. It starts infinite (tools, no weapons), collapses as the weaponsmiths come online around minute 30–40, and settles near 0.2.</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Minute</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">Coal panel</th><th colspan="2" style="text-align:center;border-bottom:1px solid var(--hair-2)">Iron-bar panel</th><th>ρ</th><th></th></tr>
+        <tr><th></th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Tool</th><th>Weapon</th><th></th><th></th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>0</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>tools only</td></tr>
+          <tr><td>10</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>no change</td></tr>
+          <tr><td>20</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>no change</td></tr>
+          <tr><td>30</td><td>3</td><td>32</td><td>62</td><td>3</td><td>90</td><td>10</td><td>—</td><td>smiths start going up</td></tr>
+          <tr class="hot"><td>40</td><td>17</td><td>26</td><td>40</td><td>17</td><td>68</td><td>32</td><td>2.13</td><td>military online</td></tr>
+          <tr class="hot"><td>50</td><td>20</td><td>20</td><td>40</td><td>20</td><td>48</td><td>52</td><td>0.94</td><td></td></tr>
+          <tr class="hot"><td>60</td><td>21</td><td>18</td><td>40</td><td>21</td><td>41</td><td>59</td><td>0.70</td><td>≈200 T3</td></tr>
+          <tr class="hot"><td>70</td><td>22</td><td>16</td><td>40</td><td>22</td><td>40</td><td>60</td><td>0.56</td><td></td></tr>
+          <tr><td>80</td><td>22</td><td>16</td><td>40</td><td>22</td><td>40</td><td>60</td><td>0.49</td><td>no change</td></tr>
+          <tr class="hot"><td>90</td><td>23</td><td>14</td><td>40</td><td>23</td><td>40</td><td>60</td><td>0.32</td><td>final setting</td></tr>
+          <tr><td>100</td><td>23</td><td>14</td><td>40</td><td>23</td><td>40</td><td>60</td><td>0.25</td><td>no change</td></tr>
+          <tr><td>110</td><td>23</td><td>14</td><td>40</td><td>23</td><td>40</td><td>60</td><td>0.23</td><td>no change</td></tr>
+          <tr><td>120</td><td>23</td><td>14</td><td>40</td><td>23</td><td>40</td><td>60</td><td>0.22</td><td>no change</td></tr>
+          <tr><td>140</td><td>23</td><td>14</td><td>40</td><td>23</td><td>40</td><td>60</td><td>0.20</td><td>no change</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Highlighted rows are the only ones you actually touch — <strong>six changes in a 140-minute game</strong>. Simulated end to end against the ramping build:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Strategy</th><th>T3 @60</th><th>@80</th><th>@100</th><th>@140</th><th>Tools</th><th>Toolsmith uptime</th><th>Idle bars</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>the schedule above</td><td>189</td><td>376</td><td>846</td><td>1645</td><td>349</td><td>97.0 %</td><td>0</td></tr>
+          <tr><td>set-once 22/16/40/22</td><td>184</td><td>384</td><td>828</td><td>1628</td><td>316</td><td>87.9 %</td><td>92</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The schedule buys <strong>+33 tools, +9 points of toolsmith uptime, +17 soldiers</strong> and clears the 92 stranded iron bars. If you only want to touch the panel twice, minute 0 and minute 40 alone already capture most of it (354 tools, 98.4 % uptime).</p>
+    <p>Two things to notice in the table. The toolsmith's <em>coal</em> slider never drops below 40 and its <em>iron-bar</em> slider never drops below 40 either — both are floors, not ratios. Following the exact ρ curve down to an iron-bar 20/80 late in the game costs 2.5 points of uptime for nothing, because a capacity-limited building needs queue priority rather than a fair share. And the early rows use 3 rather than 0 on gold and weapon: identical while those buildings don't exist, but it removes the risk of leaving a 0 in place, which is unrecoverable.</p>
+
+    <h3><span class="badge asm">Ceiling warning</span> 1000 by 1:40 does not fit in one sector</h3>
+    <p>Your milestones imply 200 T3 between minute 35 and 60 (8/min), 200 more by 80 (10/min), then <strong>600 in the last twenty minutes — 30 per minute</strong>. That last figure needs 125.5 coal a minute, which is <strong>119 % of the 105.63/min a single economy sector can dispatch</strong>. No slider setting reaches it; the simulation tops out at 846 by minute 100 and gets to 1000 around minute 110.</p>
+    <p>Three ways out, in order of practicality: start the military ramp earlier so the curve is flatter and never demands 30/min; split the settlement into <strong>two economy sectors</strong>, each of which gets its own full dispatch budget; or accept 1:50 instead of 1:40. The first is free and is what the schedule above assumes you will do.</p>
 
     <h3>Recommended settings</h3>
     <div class="verdicts">

@@ -24,6 +24,9 @@ The 40 on the toolsmith is not 40 % of your coal — a toolsmith can only eat 
 dispatch ceiling, and a full building is skipped for free. It means "first in the queue whenever
 it has room", which is why it costs nothing and holds 99.7 % uptime.
 
+There is also a **minute-by-minute schedule** in the report (six changes across a 140-minute game)
+which is worth about +33 tools and +9 points of toolsmith uptime over the fixed setting.
+
 ## What's in it
 
 - **The two-stage solver.** Stage 1 picks the consumer building *type* from your sliders and a hidden
