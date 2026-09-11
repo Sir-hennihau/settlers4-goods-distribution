@@ -1069,50 +1069,49 @@ with  ρ = L/S :
     <p>Three ways out, in order of practicality: start the military ramp earlier so the curve is flatter and never demands 30/min; split the settlement into <strong>two economy sectors</strong>, each of which gets its own full dispatch budget; or accept 1:50 instead of 1:40. The first is free and is what the schedule above assumes you will do.</p>
 
     <h3>Vikings and Trojans: iron bars from a spell</h3>
-    <p>Both races can convert goods straight into iron bars with a priest — Vikings from stone, Trojans from sulfur — and many players cast it from the opening. Those bars never pass through an iron smelter, which breaks one term of the model. It turns out to break <em>exactly one</em>.</p>
-    <p>Track what a converted bar does to the ledger. It is delivered to the weaponsmith like any other bar, so it bumps that counter by 1; the coal for the resulting weapon bumps it by another 1. <strong>The weaponsmith's counter moves by 2 per weapon whatever the bar's origin</strong> — identical to the smelted case. The goldsmelter therefore still needs to track it one-for-one, so <strong>gold and weapon stay equal</strong>, and the 2 gold bars per weapon still comes out right on its own.</p>
-    <p>What changes is that the <strong>iron smelter never received the coal</strong> for those bars. Its counter is short by exactly C, and its share of the coal should shrink by the same amount:</p>
-    <div class="formula" style="max-width:var(--col)">ledger targets with C converted bars
-   goldsmelter  2S        ironsmelter  S + L − C
-   weaponsmith  2S        toolsmith    2L
+    <p>Both races can convert goods straight into iron bars with a priest — Vikings from stone, Trojans from sulfur — and many players cast it from the opening. Those bars never pass through an iron smelter, which breaks one term of the model. It breaks <em>exactly one</em>.</p>
+    <p>Track what a converted bar does to the ledger. It is delivered to the weaponsmith like any other bar, so it bumps that counter by 1; the coal for the resulting weapon bumps it by another 1. <strong>The weaponsmith's counter moves by 2 per weapon whatever the bar's origin</strong> — identical to the smelted case. The goldsmelter therefore still tracks it one-for-one, <strong>gold and weapon stay equal</strong>, and 2 gold bars per weapon still comes out right by itself. The toolsmith is unaffected for the same reason.</p>
+    <p>What changes is that the <strong>iron smelter never received the coal</strong> for those bars. Its counter is short by exactly C, and its share should shrink:</p>
+    <div class="formula" style="max-width:var(--col)">p<span class="cm">iron</span> = 60 × (S + L − C) / (5S + L − C)      <span class="cm">S weapons, L tools, C converted bars</span>
+p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span class="cm">iron</span>) / 2       <span class="cm">only an even p iron keeps these equal</span></div>
 
-p<span class="cm">iron</span> = 60 × (S + L − C) / (5S + L − C)      <span class="cm">S = weapons, L = tools</span>
-p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span class="cm">iron</span>) / 2</div>
-    <p style="margin-top:1.2em">Note the arithmetic constraint: only an <strong>even</strong> iron slider lets gold and weapon come out equal, since they share whatever is left of 60. Odd values force them apart and break the invariant.</p>
-    <p>Simulated on a Viking build, coal-tight, with the conversions arriving across the first twenty minutes — the presets and the coal split they actually produce:</p>
+    <h3 style="margin-top:2em">First, a correction to my own numbers</h3>
+    <p class="srcnote"><span class="badge asm">Errata</span></p>
+    <p>Earlier in this page the recommended iron slider is <strong>16</strong>; an earlier draft of this section showed <strong>14</strong> for the same no-conversion case. That was my inconsistency, not two different optima. Both sit on one curve — the difference is the <em>tools-per-weapon ratio</em> of the economy each was measured in:</p>
     <div class="scrollx">
       <table class="memmap slider">
-        <thead><tr><th>Converted bars</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>T3</th><th>Toolsmith</th><th>Idle gold</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">coal actually delivered, %</th></tr>
-        <tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>gold</th><th>iron</th><th>weapon</th><th>tool</th></tr></thead>
+        <thead><tr><th>Scenario</th><th>tools per weapon</th><th>formula</th><th>iron</th><th>gold = weapon</th></tr></thead>
         <tbody>
-          <tr><td>none</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1237</td><td>99.84 %</td><td>8</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
-          <tr><td>32</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1236</td><td>99.8 %</td><td>10</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
-          <tr><td>64</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1221</td><td>99.57 %</td><td>55</td><td>45.9</td><td>27.8</td><td>22.4</td><td>3.9</td></tr>
-          <tr class="hot"><td>128</td><td>24</td><td>12</td><td>40</td><td>24</td><td>1242</td><td>99.62 %</td><td>27</td><td>47.9</td><td>24.4</td><td>23.8</td><td>3.9</td></tr>
-          <tr class="hot"><td>192</td><td>25</td><td>10</td><td>40</td><td>25</td><td>1250</td><td>99.86 %</td><td>13</td><td>47.9</td><td>24.2</td><td>24.0</td><td>3.9</td></tr>
-          <tr class="hot"><td>256</td><td>26</td><td>8</td><td>40</td><td>26</td><td>1251</td><td>99.86 %</td><td>13</td><td>47.9</td><td>24.2</td><td>24.0</td><td>3.9</td></tr>
+          <tr class="hot"><td>opening-weighted — the recommendation on this page</td><td>0.45</td><td>15.96</td><td>16</td><td>22</td></tr>
+          <tr><td>mature economy, 250 tools per 1250 weapons</td><td>0.20</td><td>13.8</td><td>14</td><td>23</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">The toolsmith’s coal slider stays at <strong>40</strong> in every row, and that is not laziness — it is measured. At 40 the toolsmith is dry of coal <strong>0.0 %</strong> of cycles at every conversion level. Raising it to 48, 56 or 64 removes nothing, because there is nothing left to remove, and it costs soldiers: at 256 conversions, tool 40 gives 1251 T3 and tool 64 gives 1236. <strong>40 is already the ceiling of what a coal slider can do for the toolsmith.</strong></p>
-    <p>The residual stalls are all <em>iron bars</em>, and that is where the lever is. Raising the toolsmith on the <strong>iron-bar panel from 40 to 60</strong> lifts uptime from 99.3 % to <strong>99.86 %</strong> at no cost in soldiers — measured at 0, 128 and 256 conversions alike, and it improves the no-conversion case too. Same self-limiting logic as coal: the toolsmith only wants about 13 % of your bars, so 60 simply buys it queue priority.</p>
-    <p><strong>Under about 64 converted bars, leave the coal panel alone.</strong> The formula asks for roughly one point off iron, which is smaller than the run-to-run spread and is not even an available step, since only an even iron value keeps gold equal to weapon. From 128 upward it is real and monotone: every 64 converted bars is worth about <strong>two points off iron, one point onto each of gold and weapon</strong>.</p>
-    <p>The failure mode if you ignore it is unmistakable. Running the no-conversion setting with 256 bars converted leaves <strong>230 iron bars stranded</strong> in storage — you smelted bars you already had. Getting it right clears them to zero and returns about twenty soldiers.</p>
+    <p style="margin-top:1.2em">Worse, the band is <strong>flat</strong>. Re-running the phased Viking economy, every iron value from 14 to 20 lands within 2 % of the best on soldiers (1229–1254 T3). So 16 against 14 is not a real difference — it is inside the model's own noise, and I should not have presented either as precise. <strong>Keep 22 / 16 / 40 / 22.</strong></p>
 
-    <h3>Don't phase this one</h3>
-    <p>The obvious refinement is to cut the iron smelter hard while the converted bars are being consumed and restore it later. Tested, and it is worse:</p>
-    <div class="scrollx">
-      <table class="memmap slider">
-        <thead><tr><th>Strategy (256 converted bars)</th><th>T3</th><th>Idle gold</th><th>Loose bars</th></tr></thead>
-        <tbody>
-          <tr><td>no-conversion setting, unchanged</td><td>1220</td><td>55</td><td>230</td></tr>
-          <tr class="hot"><td>one adjusted setting, all game</td><td>1239</td><td>38</td><td>77</td></tr>
-          <tr><td>phased 28/4 → 26/8 → 24/12</td><td>1237</td><td>43</td><td>82</td></tr>
-        </tbody>
-      </table>
+    <h3>And a correction to the conversion magnitude</h3>
+    <p>My first pass at this table showed the iron slider falling from 14 to 8 across 256 converted bars. That merged two different effects, and only one of them is the ledger:</p>
+    <ul class="rules">
+      <li><i class="tick"></i><span><b>The ledger effect is small.</b> Converted bars shorten the iron smelter's counter by C out of roughly 1,450 total bars. Worth about <strong>one iron point per 128 converted bars</strong> — from 16, that is 16 → 16 → 14 across the whole 32-to-256 range.</span></li>
+      <li><i class="tick"></i><span><b>The rest was an over-built iron chain.</b> My simulated build kept its iron smelts and iron mines sized as if there were no conversions, so the slider was doing a second job: throttling capacity you no longer need. That is a build problem wearing a slider's clothes.</span></li>
+    </ul>
+    <p style="margin-top:1.2em">Two independent scenarios disagreed by a factor of two on how far to throttle (−5 against −10 points at 256 bars), which is exactly what you would expect when the answer depends on how over-built your chain happens to be. So I will not give you a precise number I cannot defend.</p>
+
+    <h3>What to actually do</h3>
+    <div class="verdicts">
+      <div class="verdict">
+        <span class="stage">The right play</span>
+        <h4>Build less iron, not less slider</h4>
+        <p class="note">Converted bars replace smelted ones one-for-one. If you expect S weapons and L tools and will convert C bars, you only need to smelt <strong>S + L − C</strong> — so cut iron smelts <em>and</em> iron mines by that fraction. Do that and the coal panel barely moves: <strong>22 / 16 / 40 / 22</strong> up to 128 bars, <strong>23 / 14 / 40 / 23</strong> beyond it.</p>
+      </div>
+      <div class="verdict">
+        <span class="stage">If you keep a standard build</span>
+        <h4>Let the stranded bars tell you</h4>
+        <p class="note">Iron bars piling in storage is the signal, and it is unambiguous — you are smelting bars you already conjured. Drop iron by 2 (gold and weapon each take 1) and watch again. Expect to end somewhere between 16 and 10 depending on how heavily you cast.</p>
+      </div>
     </div>
-    <p style="margin-top:1.2em">The phased version over-corrects: an iron slider near zero pushes gold and weapon to 28 each, and the goldsmelter runs ahead of what the weaponsmith can pair — 116 gold bars stranded at 128 conversions. One adjusted setting, left alone, is both simpler and better. The same conclusion as everywhere else in this system: the ledger is cumulative, so pick the number that is right for the whole match and stop touching it.</p>
-    <p><span class="badge">Unverified</span> I could not confirm the per-cast conversion amount from the shipped data. <em class="term">Config/Magic.cfg</em> gives the <em class="term">X-&gt;Y</em> spell a limit of 6 for Vikings and 4 for Trojans, which is not goods-per-cast in any unit I could pin down, and the runtime reads it through a computed index the static cross-references do not reach. The table above is therefore indexed by <strong>total bars you have converted</strong>, which you can count yourself, rather than by casts.</p>
+    <p style="margin-top:1.4em">Everything else in the conversion case is unchanged and solid: <strong>gold and weapon stay equal</strong>, the toolsmith's coal slider stays at <strong>40</strong> — it is dry of coal 0.0 % of cycles at every conversion level, and raising it costs soldiers — and the <strong>iron-bar panel at tool 60 / weapon 40</strong> holds toolsmith uptime near 99.9 % throughout.</p>
+    <p><span class="badge">Unverified</span> I could not confirm the per-cast conversion amount from the shipped data. <em class="term">Config/Magic.cfg</em> gives the <em class="term">X-&gt;Y</em> spell a limit of 6 for Vikings and 4 for Trojans, which is not goods-per-cast in any unit I could pin down, and the runtime reads it through a computed index that static cross-references do not reach. Count the bars yourself rather than the casts.</p>
 
     <h3>Bottom line</h3>
     <div class="verdicts" style="margin-bottom:18px">
