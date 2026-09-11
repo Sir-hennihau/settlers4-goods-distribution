@@ -1085,16 +1085,18 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
         <thead><tr><th>Converted bars</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>T3</th><th>Toolsmith</th><th>Idle gold</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">coal actually delivered, %</th></tr>
         <tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>gold</th><th>iron</th><th>weapon</th><th>tool</th></tr></thead>
         <tbody>
-          <tr><td>none</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1236</td><td>99.3 %</td><td>11</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
-          <tr><td>32</td><td colspan="4" style="opacity:.75">keep the no-conversion setting</td><td>1236</td><td>99.3 %</td><td>11</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
-          <tr><td>64</td><td colspan="4" style="opacity:.75">keep the no-conversion setting</td><td>1236</td><td>99.3 %</td><td>11</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
-          <tr class="hot"><td>128</td><td>25</td><td>10</td><td>40</td><td>25</td><td>1242</td><td>99.3 %</td><td>31</td><td>47.9</td><td>24.4</td><td>23.8</td><td>3.9</td></tr>
-          <tr class="hot"><td>192</td><td>25</td><td>10</td><td>40</td><td>25</td><td>1253</td><td>99.4 %</td><td>10</td><td>47.9</td><td>24.2</td><td>24.0</td><td>3.9</td></tr>
-          <tr class="hot"><td>256</td><td>26</td><td>8</td><td>40</td><td>26</td><td>1253</td><td>99.4 %</td><td>10</td><td>48.0</td><td>24.1</td><td>24.0</td><td>3.9</td></tr>
+          <tr><td>none</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1237</td><td>99.84 %</td><td>8</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
+          <tr><td>32</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1236</td><td>99.8 %</td><td>10</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
+          <tr><td>64</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1221</td><td>99.57 %</td><td>55</td><td>45.9</td><td>27.8</td><td>22.4</td><td>3.9</td></tr>
+          <tr class="hot"><td>128</td><td>24</td><td>12</td><td>40</td><td>24</td><td>1242</td><td>99.62 %</td><td>27</td><td>47.9</td><td>24.4</td><td>23.8</td><td>3.9</td></tr>
+          <tr class="hot"><td>192</td><td>25</td><td>10</td><td>40</td><td>25</td><td>1250</td><td>99.86 %</td><td>13</td><td>47.9</td><td>24.2</td><td>24.0</td><td>3.9</td></tr>
+          <tr class="hot"><td>256</td><td>26</td><td>8</td><td>40</td><td>26</td><td>1251</td><td>99.86 %</td><td>13</td><td>47.9</td><td>24.2</td><td>24.0</td><td>3.9</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em"><strong>Under about 64 converted bars, do nothing.</strong> The formula asks for roughly one point off the iron slider, which is smaller than the run-to-run spread, and only even steps are available anyway. From 128 upward the adjustment is real and monotone: every 128 converted bars is worth about <strong>two points off iron, one point onto each of gold and weapon</strong>.</p>
+    <p style="margin-top:1.2em">The toolsmith’s coal slider stays at <strong>40</strong> in every row, and that is not laziness — it is measured. At 40 the toolsmith is dry of coal <strong>0.0 %</strong> of cycles at every conversion level. Raising it to 48, 56 or 64 removes nothing, because there is nothing left to remove, and it costs soldiers: at 256 conversions, tool 40 gives 1251 T3 and tool 64 gives 1236. <strong>40 is already the ceiling of what a coal slider can do for the toolsmith.</strong></p>
+    <p>The residual stalls are all <em>iron bars</em>, and that is where the lever is. Raising the toolsmith on the <strong>iron-bar panel from 40 to 60</strong> lifts uptime from 99.3 % to <strong>99.86 %</strong> at no cost in soldiers — measured at 0, 128 and 256 conversions alike, and it improves the no-conversion case too. Same self-limiting logic as coal: the toolsmith only wants about 13 % of your bars, so 60 simply buys it queue priority.</p>
+    <p><strong>Under about 64 converted bars, leave the coal panel alone.</strong> The formula asks for roughly one point off iron, which is smaller than the run-to-run spread and is not even an available step, since only an even iron value keeps gold equal to weapon. From 128 upward it is real and monotone: every 64 converted bars is worth about <strong>two points off iron, one point onto each of gold and weapon</strong>.</p>
     <p>The failure mode if you ignore it is unmistakable. Running the no-conversion setting with 256 bars converted leaves <strong>230 iron bars stranded</strong> in storage — you smelted bars you already had. Getting it right clears them to zero and returns about twenty soldiers.</p>
 
     <h3>Don't phase this one</h3>
@@ -1136,8 +1138,8 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
       </div>
       <div class="verdict">
         <span class="stage">Iron-bar panel · tool / weapon</span>
-        <h4 class="setnums"><span><i>tool</i>40</span><span><i>weapon</i>60</span></h4>
-        <p class="note">Shipyard and vehicle hall at 0. Without this the coal setting above is wasted — this is the panel that actually stalls your toolsmith.</p>
+        <h4 class="setnums"><span><i>tool</i>60</span><span><i>weapon</i>40</span></h4>
+        <p class="note">Shipyard and vehicle hall at 0. Without this the coal setting above is wasted — this is the panel that actually stalls your toolsmith. 60 rather than 40 lifts uptime from 99.3 % to 99.86 % for free; the toolsmith only wants about 13 % of your bars, so the rest flows straight past to the weaponsmith.</p>
       </div>
       <div class="verdict">
         <span class="stage">Set it once</span>
