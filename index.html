@@ -1130,18 +1130,20 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
 
     <h3>The conversion table, stress-tested</h3>
     <p class="srcnote"><span class="badge asm">How this was checked</span> Earlier drafts of this section quoted band edges to the nearest bar. That precision was not real &mdash; it came from one build with mines matched exactly to demand. Everything below was re-run across <strong>seven different build shapes</strong> (exact; +10% gold chain; +10% iron chain; +10% and +20% both; +10% coal; +10% both with +10% coal) and the value reported is the one with the <em>smallest worst-case loss</em> across all of them, not the winner on any single build.</p>
-    <p>The result is simpler and more robust than the five-band table it replaces. For one toolsmith it is <strong>three values</strong>:</p>
+    <p>For one toolsmith, scanning the crossovers in 10-bar steps:</p>
     <div class="scrollx">
       <table class="memmap slider">
         <thead><tr><th>Converted iron bars</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Worst case across all seven builds</th></tr></thead>
         <tbody>
-          <tr class="hot"><td>0 &ndash; 35</td><td>23</td><td>14</td><td>40</td><td>23</td><td>0.2% below best</td></tr>
-          <tr class="hot"><td>35 &ndash; 220</td><td>24</td><td>13</td><td><strong>39</strong></td><td>24</td><td>0.3% below best</td></tr>
-          <tr class="hot"><td>220 and above</td><td>24</td><td>12</td><td>40</td><td>24</td><td>0.2% below best</td></tr>
+          <tr class="hot"><td>0 &ndash; 50</td><td>23</td><td>14</td><td>40</td><td>23</td><td>0.2% below best</td></tr>
+          <tr class="hot"><td>50 &ndash; 240</td><td>24</td><td>13</td><td><strong>39</strong></td><td>24</td><td>0.3% below best</td></tr>
+          <tr class="hot"><td>240 &ndash; 430</td><td>24</td><td>12</td><td>40</td><td>24</td><td>0.2% below best</td></tr>
+          <tr><td>430 &ndash; 670</td><td>25</td><td>11</td><td><strong>39</strong></td><td>25</td><td>0.2% below best</td></tr>
+          <tr><td>670 and above</td><td>25</td><td>10</td><td>40</td><td>25</td><td>0.2% below best</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">Iron 11 and 10 do become nominally best past about 380 converted bars, but only by <strong>0.1%</strong> over iron 12 &mdash; not worth a slider change. Iron 12 carries you from 220 bars upward however heavily you cast.</p>
+    <p style="margin-top:1.2em">The last two bands are worth about <strong>0.5% each</strong> &mdash; real, but the smallest steps on this page. If you would rather not keep touching the panel, iron 12 from 240 bars upward costs you well under a percent however heavily you cast.</p>
 
     <h3>The robustness table</h3>
     <p>Worst-case shortfall below the best value for that build, across all seven build shapes. Lower is safer; the winner of each row is the value you can set without knowing exactly how your economy is proportioned.</p>
@@ -1211,18 +1213,19 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <p style="margin-top:1.2em">Same shape as with one toolsmith &mdash; a cliff on the low side, a shallow plateau on the high side &mdash; shifted up by two points. The same rule applies: <strong>if unsure, err high.</strong></p>
 
     <h3>The two-toolsmith ladder</h3>
-    <p>Scanning the crossovers in 20-bar steps gives three bands, and the middle one covers almost the whole realistic range:</p>
+    <p>Scanning the crossovers in 10-bar steps gives four bands, and the second one covers almost the whole realistic range:</p>
     <div class="scrollx">
       <table class="memmap slider">
         <thead><tr><th>Converted iron bars</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Worst case across all seven builds</th></tr></thead>
         <tbody>
-          <tr class="hot"><td>0 &ndash; 40</td><td>22</td><td>16</td><td>40</td><td>22</td><td>0.3% below best</td></tr>
-          <tr class="hot"><td>40 &ndash; 320</td><td>23</td><td>15</td><td><strong>39</strong></td><td>23</td><td>0.5% below best</td></tr>
-          <tr class="hot"><td>320 and above</td><td>23</td><td>14</td><td>40</td><td>23</td><td>0.3% below best</td></tr>
+          <tr class="hot"><td>0 &ndash; 30</td><td>22</td><td>16</td><td>40</td><td>22</td><td>0.3% below best</td></tr>
+          <tr class="hot"><td>30 &ndash; 310</td><td>23</td><td>15</td><td><strong>39</strong></td><td>23</td><td>0.5% below best</td></tr>
+          <tr class="hot"><td>310 &ndash; 590</td><td>23</td><td>14</td><td>40</td><td>23</td><td>0.3% below best</td></tr>
+          <tr><td>590 and above</td><td>24</td><td>13</td><td><strong>39</strong></td><td>24</td><td>0.4% below best</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">The iron-bar panel stays <strong>tool 60 / weapon 40</strong> throughout, exactly as with one toolsmith. Across all 42 runs behind this table the toolsmith sat dry <strong>0.03%</strong> of the time and idle weapons were <strong>exactly zero</strong>; the toolsmith still held 98.8&ndash;99.5% uptime with coal supply cut to 80%.</p>
+    <p style="margin-top:1.2em">Past 590 bars the winner flickers between 12 and 13 at a few tenths of a percent &mdash; that is noise in the measurement, not a real distinction; take 13. The iron-bar panel stays <strong>tool 60 / weapon 40</strong> throughout, exactly as with one toolsmith. Across all 42 runs behind this table the toolsmith sat dry <strong>0.03%</strong> of the time and idle weapons were <strong>exactly zero</strong>; the toolsmith still held 98.8&ndash;99.5% uptime with coal supply cut to 80%.</p>
 
     <h3>The part that actually costs you: the iron chain, not the slider</h3>
     <p>There is a trap here worth more than any slider point. A second toolsmith eats 2.9 iron bars a minute on top of your weaponsmiths. If you add the building but not the smelter capacity to feed it, <strong>no slider setting recovers the loss</strong>:</p>
@@ -1240,12 +1243,61 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <p>So the honest price of the second toolsmith is <strong>one more iron smelter and about 7.5% more coal</strong>, not soldiers. Both fit inside the engine's hard ceiling of 105.63 coal per minute per sector, at 79% of it.</p>
     <p><span class="badge">One-line answer</span> Two toolsmiths: <strong>22 / 16 / 40 / 22</strong> until you have cast about 40 bars, then <strong>23 / 15 / 39 / 23</strong> for the rest of a normal game. Stopping the second smith at 200 tools changes nothing about the sliders &mdash; but do build the extra iron smelter before you build the second toolsmith.</p>
 
+    <h3>Every number above is Viking. The other races differ.</h3>
+    <p class="srcnote"><span class="badge asm">Correction</span> All the tuning on this page was computed with Viking production times. That is fine for the Vikings, and it turns out to be nearly fine for one toolsmith on any race &mdash; but for two toolsmiths it is a full point off for the Trojans, who are the <em>other</em> conversion race. The ladders below are recomputed per race from the shipped production times.</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Race</th><th>Gold smelt</th><th>Iron smelt</th><th>Weapon smith</th><th>Tool smith</th></tr></thead>
+        <tbody>
+          <tr><td>Viking</td><td>279</td><td>272</td><td>326</td><td>291</td></tr>
+          <tr><td>Roman</td><td>301</td><td>283</td><td>390</td><td>308</td></tr>
+          <tr><td>Maya</td><td>319</td><td>373</td><td>422</td><td>377</td></tr>
+          <tr><td>Trojan</td><td>426</td><td>362</td><td>402</td><td>347</td></tr>
+          <tr><td>Trojan UBO</td><td>414</td><td>336</td><td>376</td><td>321</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em"><span style="opacity:.75">Ticks per unit produced. At 71 ms a tick, the Viking gold smelter at 279 makes 3.03 bars a minute, the Trojan at 426 makes 1.98.</span></p>
+
+    <p style="margin-top:1.4em"><strong>One toolsmith</strong> &mdash; iron slider by converted bars</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Race</th><th>iron 14</th><th>iron 13</th><th>iron 12</th><th>iron 11</th><th>iron 10</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>Viking</td><td>0 &ndash; 50</td><td>50 &ndash; 240</td><td>240 &ndash; 430</td><td>430 &ndash; 670</td><td>670 +</td></tr>
+          <tr><td>Roman</td><td>0 &ndash; 40</td><td>40 &ndash; 180</td><td>180 &ndash; 380</td><td>380 +</td><td>&mdash;</td></tr>
+          <tr><td>Maya</td><td>0 &ndash; 20</td><td>20 &ndash; 140</td><td>140 &ndash; 300</td><td>300 &ndash; 560</td><td>560 +</td></tr>
+          <tr class="hot"><td>Trojan</td><td>0 &ndash; 20</td><td>20 &ndash; 140</td><td>140 &ndash; 340</td><td>340 &ndash; 580</td><td>580 +</td></tr>
+          <tr><td>Trojan UBO</td><td>0 &ndash; 40</td><td>40 &ndash; 180</td><td>180 &ndash; 360</td><td>360 +</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Every race starts at <strong>14</strong> and steps to <strong>13</strong> early, so with one toolsmith the Viking numbers are safe to use on any race. Only the deeper bands arrive sooner.</p>
+
+    <p style="margin-top:1.4em"><strong>Two toolsmiths</strong> &mdash; this is where race matters</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Race</th><th>iron 16</th><th>iron 15</th><th>iron 14</th><th>iron 13</th><th>iron 12</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>Viking</td><td>0 &ndash; 30</td><td>30 &ndash; 310</td><td>310 &ndash; 590</td><td>590 +</td><td>&mdash;</td></tr>
+          <tr><td>Roman</td><td>0 &ndash; 20</td><td>20 &ndash; 180</td><td>180 &ndash; 420</td><td>420 +</td><td>&mdash;</td></tr>
+          <tr><td>Maya</td><td>&mdash;</td><td>0 &ndash; 40</td><td>40 &ndash; 280</td><td>280 &ndash; 500</td><td>500 +</td></tr>
+          <tr class="hot"><td>Trojan</td><td>&mdash;</td><td>0 &ndash; 60</td><td>60 &ndash; 360</td><td>360 &ndash; 520</td><td>520 +</td></tr>
+          <tr><td>Trojan UBO</td><td>&mdash;</td><td>0 &ndash; 120</td><td>120 &ndash; 420</td><td>420 +</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em"><strong>Vikings and Romans open at 16; Trojans, Trojan UBO and Maya open at 15.</strong> The reason is visible in the production times above: a Trojan gold smelter is 53% slower than a Viking one, so a Trojan build carries far more gold smelters per weaponsmith, and the coal the extra smelters demand has to come from somewhere. The iron slider gives it up.</p>
+    <p>The panel values, as always: iron 16 &rarr; <strong>22 / 16 / 40 / 22</strong>, iron 15 &rarr; <strong>23 / 15 / 39 / 23</strong>, iron 14 &rarr; <strong>23 / 14 / 40 / 23</strong>, iron 13 &rarr; <strong>24 / 13 / 39 / 24</strong>, iron 12 &rarr; <strong>24 / 12 / 40 / 24</strong>, iron 11 &rarr; <strong>25 / 11 / 39 / 25</strong>, iron 10 &rarr; <strong>25 / 10 / 40 / 25</strong>. Gold always equals weapon; the toolsmith drops to 39 on odd iron so it can.</p>
+
     <h3>What I am confident about, and what I am not</h3>
     <ul class="rules">
       <li><i class="tick"></i><span><b>Solid &mdash; the mechanism.</b> Both formulas, the shared per-type ledger, the recipes, the 71 ms tick and the 105.63 coal/min ceiling are read from the binary and the shipped data files, and two of them reproduce independently measured community numbers. None of that depends on my simulation.</span></li>
       <li><i class="tick"></i><span><b>Solid &mdash; gold equals weapon.</b> It falls out of the recipe, and the ledgers converge to within 1% over a full game with the coal splitting 1.99 against the recipe's 2.00.</span></li>
       <li><i class="tick"></i><span><b>Solid &mdash; the toolsmith at 40.</b> 0.03% dry across 105 runs spanning one- and two-toolsmith builds, nine conversion configs and seven build shapes, and idle weapons of exactly zero in all of them.</span></li>
       <li><i class="tick"></i><span><b>Solid &mdash; iron below 12 is bad.</b> Costs 3&ndash;6% in every build tested, at every conversion level.</span></li>
+      <li><i class="tick"></i><span><b>Solid &mdash; every race opens at 14 with one toolsmith.</b> Recomputed from the shipped production times for all five races; they diverge only in the deeper conversion bands.</span></li>
+      <li><i class="tick"></i><span><b>Not solid &mdash; reading a Viking number on a Trojan build.</b> With two toolsmiths the opening value is 16 for Vikings and Romans but 15 for Trojans, Trojan UBO and Maya. Use the per-race table.</span></li>
       <li><i class="tick"></i><span><b>Not solid &mdash; band edges to the bar.</b> The crossovers above are approximate. The underlying optimum shifts with how much slack your ore chains carry; on a coal-rich build every value from 14 to 20 is within a percent of each other. Treat 35 and 220 as "roughly", not thresholds.</span></li>
       <li><i class="tick"></i><span><b>Not solid &mdash; the exact peak.</b> On a perfectly matched build it is 14; give the gold chain 10% slack and it is 16; give the whole thing 10% more coal and it is 20. The three-value ladder above is chosen for robustness, not because 14, 13 and 12 are special.</span></li>
     </ul>
