@@ -1108,19 +1108,20 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <p>The exact optimum is a smooth curve, so each slider value rules over a <em>band</em> of conversion totals &mdash; it is best while the exact value sits within half a point of it. For the army modelled here (1,250 weapons plus 203 tools = <strong>1,453 iron bars needed in total</strong>):</p>
     <div class="scrollx">
       <table class="memmap slider">
-        <thead><tr><th>Iron</th><th>Converted bars</th><th>as % of all bars you need</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>gold = weapon?</th></tr></thead>
+        <thead><tr><th>Iron</th><th>Converted bars</th><th>as % of all bars you need</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th></tr></thead>
         <tbody>
-          <tr><td>14</td><td>0 &ndash; 1</td><td>0%</td><td>23</td><td>14</td><td>40</td><td>23</td><td>yes</td></tr>
-          <tr class="hot"><td>13</td><td>1 &ndash; 137</td><td>0 &ndash; 9%</td><td>23</td><td>13</td><td>40</td><td>24</td><td>no, +1 to weapon</td></tr>
-          <tr class="hot"><td>12</td><td>137 &ndash; 267</td><td>9 &ndash; 18%</td><td>24</td><td>12</td><td>40</td><td>24</td><td>yes</td></tr>
-          <tr class="hot"><td>11</td><td>267 &ndash; 392</td><td>18 &ndash; 27%</td><td>24</td><td>11</td><td>40</td><td>25</td><td>no, +1 to weapon</td></tr>
-          <tr class="hot"><td>10</td><td>392 &ndash; 512</td><td>27 &ndash; 35%</td><td>25</td><td>10</td><td>40</td><td>25</td><td>yes</td></tr>
-          <tr><td>9</td><td>512 &ndash; 628</td><td>35 &ndash; 43%</td><td>25</td><td>9</td><td>40</td><td>26</td><td>no, +1 to weapon</td></tr>
-          <tr><td>8</td><td>628 &ndash; 739</td><td>43 &ndash; 51%</td><td>26</td><td>8</td><td>40</td><td>26</td><td>yes</td></tr>
+          <tr><td>14</td><td>0 &ndash; 1</td><td>0%</td><td>23</td><td>14</td><td>40</td><td>23</td></tr>
+          <tr class="hot"><td>13</td><td>1 &ndash; 137</td><td>0 &ndash; 9%</td><td>23</td><td>13</td><td><strong>41</strong></td><td>23</td></tr>
+          <tr class="hot"><td>12</td><td>137 &ndash; 267</td><td>9 &ndash; 18%</td><td>24</td><td>12</td><td>40</td><td>24</td></tr>
+          <tr class="hot"><td>11</td><td>267 &ndash; 392</td><td>18 &ndash; 27%</td><td>24</td><td>11</td><td><strong>41</strong></td><td>24</td></tr>
+          <tr class="hot"><td>10</td><td>392 &ndash; 512</td><td>27 &ndash; 35%</td><td>25</td><td>10</td><td>40</td><td>25</td></tr>
+          <tr><td>9</td><td>512 &ndash; 628</td><td>35 &ndash; 43%</td><td>25</td><td>9</td><td><strong>41</strong></td><td>25</td></tr>
+          <tr><td>8</td><td>628 &ndash; 739</td><td>43 &ndash; 51%</td><td>26</td><td>8</td><td>40</td><td>26</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">Two things to take from it. The <strong>percentage column is the scale-free one</strong> &mdash; if you play to a bigger or smaller army, read the band off that rather than the absolute bar count. And <strong>odd iron values force gold and weapon apart</strong>, because they share whatever is left of 60. Measured, the spare point belongs on the <em>weaponsmith</em>: at 128 conversions, 23 / 13 / 40 / 24 produces 1,246 soldiers against 1,219 for 24 / 13 / 40 / 23, because tilting toward gold simply banks gold you cannot pair.</p>
+    <p style="margin-top:1.2em">Gold and weapon are <strong>equal in every row</strong>. An odd iron value would normally force them apart, because they share whatever is left of 60 &mdash; but the fix is to move the <em>toolsmith</em> by one instead, to <strong>41</strong>. The remainder is then even again and the invariant survives. The toolsmith cannot tell the difference: it wants about 2.6% of your coal and 40 was already a floor rather than a requirement, so 41 costs nothing and never drops below the value proven safe above. Measured at three conversion levels, tool 39, 40 and 41 land within 0.6% of each other on soldiers and within 0.3 points on uptime.</p>
+    <p>The <strong>percentage column is the scale-free one</strong> &mdash; if you play to a bigger or smaller army, read the band off that rather than the absolute bar count.</p>
 
     <h3>Coal-shortage proof for every setting</h3>
     <p>Same method as the audit earlier on this page: full build from minute zero, mines matched to demand at 100%, <strong>no starting buffer</strong>, so coal is genuinely the binding constraint. Toolsmith coal 40 and iron-bar panel tool 60 / weapon 40 throughout. Each table runs its setting at the midpoint of its band.</p>
@@ -1128,26 +1129,26 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
       <tbody><tr class="hot"><td>100%</td><td>6 / 0 / 0 / 2</td><td>1% / 51% / full / 15%</td><td>1237 / 203</td><td>1</td></tr><tr><td>90%</td><td>38 / 13 / 0 / 24</td><td>1% / 2% / full / 5%</td><td>1090 / 202</td><td>4</td></tr><tr><td>80%</td><td>47 / 26 / 0 / 5</td><td>1% / 1% / full / 17%</td><td>981 / 203</td><td>0</td></tr><tr><td>60%</td><td>61 / 50 / 0 / 0</td><td>1% / 1% / full / 86%</td><td>671 / 202</td><td>1</td></tr><tr><td>35%</td><td>77 / 73 / 0 / 1</td><td>0% / 0% / full / 93%</td><td>298 / 201</td><td>1</td></tr></tbody></table></div>
-    <p style="margin-top:1.4em"><strong>Iron 13 &mdash; coal panel 23 / 13 / 40 / 24</strong> &nbsp;<span style="opacity:.7">tested at 69 converted bars</span></p>
+    <p style="margin-top:1.4em"><strong>Iron 13 &mdash; coal panel 23 / 13 / 41 / 23</strong> &nbsp;<span style="opacity:.7">tested at 69 converted bars</span></p>
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
-      <tbody><tr class="hot"><td>100%</td><td>3 / 7 / 0 / 0</td><td>5% / 2% / full / 85%</td><td>1245 / 203</td><td>1</td></tr><tr><td>90%</td><td>34 / 24 / 0 / 0</td><td>1% / 1% / full / 85%</td><td>1121 / 203</td><td>1</td></tr><tr><td>80%</td><td>44 / 34 / 0 / 0</td><td>1% / 1% / full / 88%</td><td>979 / 203</td><td>0</td></tr><tr><td>60%</td><td>60 / 53 / 0 / 0</td><td>1% / 1% / full / 92%</td><td>690 / 203</td><td>1</td></tr><tr><td>35%</td><td>77 / 74 / 0 / 1</td><td>0% / 0% / full / 92%</td><td>331 / 201</td><td>1</td></tr></tbody></table></div>
+      <tbody><tr class="hot"><td>100%</td><td>1 / 5 / 0 / 0</td><td>19% / 2% / full / 21%</td><td>1246 / 202</td><td>1</td></tr><tr><td>90%</td><td>33 / 22 / 0 / 9</td><td>1% / 1% / full / 13%</td><td>1131 / 203</td><td>1</td></tr><tr><td>80%</td><td>45 / 34 / 0 / 0</td><td>1% / 1% / full / 41%</td><td>987 / 203</td><td>0</td></tr><tr><td>60%</td><td>60 / 53 / 0 / 0</td><td>1% / 1% / full / 83%</td><td>691 / 202</td><td>1</td></tr><tr><td>35%</td><td>77 / 74 / 0 / 1</td><td>0% / 0% / full / 91%</td><td>331 / 201</td><td>1</td></tr></tbody></table></div>
     <p style="margin-top:1.4em"><strong>Iron 12 &mdash; coal panel 24 / 12 / 40 / 24</strong> &nbsp;<span style="opacity:.7">tested at 202 converted bars</span></p>
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
       <tbody><tr class="hot"><td>100%</td><td>1 / 18 / 0 / 0</td><td>54% / 1% / full / 77%</td><td>1246 / 203</td><td>14</td></tr><tr><td>90%</td><td>31 / 36 / 0 / 0</td><td>1% / 1% / full / 36%</td><td>1159 / 203</td><td>0</td></tr><tr><td>80%</td><td>43 / 44 / 0 / 0</td><td>1% / 1% / full / 36%</td><td>1023 / 203</td><td>1</td></tr><tr><td>60%</td><td>59 / 59 / 0 / 0</td><td>1% / 1% / full / 32%</td><td>752 / 202</td><td>1</td></tr><tr><td>35%</td><td>77 / 77 / 0 / 1</td><td>0% / 0% / full / 27%</td><td>413 / 201</td><td>1</td></tr></tbody></table></div>
-    <p style="margin-top:1.4em"><strong>Iron 11 &mdash; coal panel 24 / 11 / 40 / 25</strong> &nbsp;<span style="opacity:.7">tested at 329 converted bars</span></p>
+    <p style="margin-top:1.4em"><strong>Iron 11 &mdash; coal panel 24 / 11 / 41 / 24</strong> &nbsp;<span style="opacity:.7">tested at 329 converted bars</span></p>
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
-      <tbody><tr class="hot"><td>100%</td><td>1 / 16 / 0 / 0</td><td>67% / 2% / full / 92%</td><td>1247 / 203</td><td>139</td></tr><tr><td>90%</td><td>24 / 41 / 0 / 0</td><td>1% / 1% / full / 72%</td><td>1178 / 203</td><td>0</td></tr><tr><td>80%</td><td>40 / 48 / 0 / 0</td><td>1% / 1% / full / 42%</td><td>1043 / 203</td><td>1</td></tr><tr><td>60%</td><td>58 / 61 / 0 / 39</td><td>1% / 1% / full / 5%</td><td>777 / 203</td><td>1</td></tr><tr><td>35%</td><td>76 / 78 / 0 / 69</td><td>0% / 0% / full / 1%</td><td>425 / 203</td><td>36</td></tr></tbody></table></div>
+      <tbody><tr class="hot"><td>100%</td><td>1 / 16 / 0 / 0</td><td>71% / 2% / full / 81%</td><td>1247 / 203</td><td>138</td></tr><tr><td>90%</td><td>20 / 39 / 0 / 14</td><td>1% / 1% / full / 6%</td><td>1184 / 202</td><td>1</td></tr><tr><td>80%</td><td>38 / 47 / 0 / 27</td><td>1% / 1% / full / 5%</td><td>1037 / 203</td><td>1</td></tr><tr><td>60%</td><td>57 / 61 / 0 / 48</td><td>1% / 1% / full / 3%</td><td>759 / 203</td><td>25</td></tr><tr><td>35%</td><td>76 / 78 / 0 / 72</td><td>0% / 0% / full / 1%</td><td>412 / 203</td><td>53</td></tr></tbody></table></div>
     <p style="margin-top:1.4em"><strong>Iron 10 &mdash; coal panel 25 / 10 / 40 / 25</strong> &nbsp;<span style="opacity:.7">tested at 452 converted bars</span></p>
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
       <tbody><tr class="hot"><td>100%</td><td>1 / 14 / 0 / 0</td><td>79% / 2% / full / 91%</td><td>1247 / 203</td><td>260</td></tr><tr><td>90%</td><td>10 / 47 / 0 / 0</td><td>1% / 1% / full / 28%</td><td>1225 / 203</td><td>0</td></tr><tr><td>80%</td><td>32 / 53 / 0 / 23</td><td>1% / 1% / full / 5%</td><td>1075 / 203</td><td>1</td></tr><tr><td>60%</td><td>55 / 65 / 0 / 48</td><td>1% / 1% / full / 2%</td><td>783 / 203</td><td>51</td></tr><tr><td>35%</td><td>75 / 80 / 0 / 75</td><td>0% / 0% / full / 1%</td><td>425 / 203</td><td>123</td></tr></tbody></table></div>
-    <p style="margin-top:1.4em"><strong>Iron 9 &mdash; coal panel 25 / 9 / 40 / 26</strong> &nbsp;<span style="opacity:.7">tested at 570 converted bars</span></p>
+    <p style="margin-top:1.4em"><strong>Iron 9 &mdash; coal panel 25 / 9 / 41 / 25</strong> &nbsp;<span style="opacity:.7">tested at 570 converted bars</span></p>
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
-      <tbody><tr class="hot"><td>100%</td><td>1 / 14 / 0 / 0</td><td>82% / 2% / full / 95%</td><td>1247 / 203</td><td>377</td></tr><tr><td>90%</td><td>5 / 52 / 0 / 0</td><td>2% / 1% / full / 79%</td><td>1243 / 203</td><td>0</td></tr><tr><td>80%</td><td>29 / 57 / 0 / 9</td><td>1% / 1% / full / 10%</td><td>1103 / 203</td><td>1</td></tr><tr><td>60%</td><td>54 / 68 / 0 / 47</td><td>1% / 1% / full / 2%</td><td>820 / 203</td><td>68</td></tr><tr><td>35%</td><td>75 / 82 / 0 / 73</td><td>0% / 0% / full / 1%</td><td>448 / 203</td><td>185</td></tr></tbody></table></div>
+      <tbody><tr class="hot"><td>100%</td><td>1 / 14 / 0 / 0</td><td>83% / 3% / full / 92%</td><td>1247 / 203</td><td>377</td></tr><tr><td>90%</td><td>1 / 51 / 0 / 0</td><td>8% / 1% / full / 23%</td><td>1247 / 203</td><td>1</td></tr><tr><td>80%</td><td>28 / 56 / 0 / 23</td><td>1% / 1% / full / 3%</td><td>1093 / 203</td><td>17</td></tr><tr><td>60%</td><td>53 / 68 / 0 / 49</td><td>1% / 1% / full / 1%</td><td>801 / 203</td><td>99</td></tr><tr><td>35%</td><td>75 / 82 / 0 / 75</td><td>0% / 0% / full / 0%</td><td>435 / 203</td><td>201</td></tr></tbody></table></div>
     <p style="margin-top:1.4em"><strong>Iron 8 &mdash; coal panel 26 / 8 / 40 / 26</strong> &nbsp;<span style="opacity:.7">tested at 663 converted bars</span></p>
     <div class="scrollx"><table class="memmap slider">
       <thead><tr><th>Coal supply</th><th>% cycles short of coal<br>gold / iron / tool / weapon</th><th>avg coal held vs own cap<br>gold / iron / tool / weapon</th><th>T3 / tools</th><th>Loose bars</th></tr></thead>
@@ -1165,8 +1166,8 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <div class="verdicts">
       <div class="verdict">
         <span class="stage">Under 137 converted bars &middot; under 9% of your bars</span>
-        <h4 class="setnums"><span><i>gold</i>23</span><span><i>iron</i>13</span><span><i>tool</i>40</span><span><i>weapon</i>24</span></h4>
-        <p class="note">Or stay on 23 / 14 / 40 / 23 if you prefer gold and weapon equal &mdash; the difference is inside the flat band.</p>
+        <h4 class="setnums"><span><i>gold</i>23</span><span><i>iron</i>13</span><span><i>tool</i>41</span><span><i>weapon</i>23</span></h4>
+        <p class="note">Toolsmith 41, not 40, so the remaining 46 splits evenly and gold stays equal to weapon. Staying on 23 / 14 / 40 / 23 is also fine &mdash; the difference is inside the flat band.</p>
       </div>
       <div class="verdict">
         <span class="stage">137 &ndash; 267 bars &middot; 9 &ndash; 18%</span>
@@ -1176,10 +1177,10 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
       <div class="verdict">
         <span class="stage">267 &ndash; 512 bars &middot; 18 &ndash; 35%</span>
         <h4 class="setnums"><span><i>gold</i>25</span><span><i>iron</i>10</span><span><i>tool</i>40</span><span><i>weapon</i>25</span></h4>
-        <p class="note">Heavy casting. Past this the slider stops helping &mdash; build fewer iron smelts and mines instead.</p>
+        <p class="note">Heavy casting. For the odd step between them, iron 11, use 24 / 11 / <strong>41</strong> / 24. Past this range the slider stops helping &mdash; build fewer iron smelts and mines instead.</p>
       </div>
     </div>
-    <p style="margin-top:1.4em">Iron-bar panel <strong>tool 60 / weapon 40</strong> in every case; shipyard and vehicle hall 0. Toolsmith coal stays at <strong>40</strong> throughout &mdash; proven above to be 0% short of coal in all thirty-five test rows.</p>
+    <p style="margin-top:1.4em">Iron-bar panel <strong>tool 60 / weapon 40</strong> in every case; shipyard and vehicle hall 0. Toolsmith coal is <strong>40 for even iron values and 41 for odd ones</strong>, purely to keep gold equal to weapon &mdash; and it is 0% short of coal in every one of the thirty-five test rows either way.</p>
 
     <h3>Bottom line</h3>
     <div class="verdicts" style="margin-bottom:18px">
