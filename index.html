@@ -1129,16 +1129,16 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <p style="margin-top:1.2em"><strong>+2 iron per extra toolsmith.</strong> That is the whole rule, and it is why 22 / 16 / 40 / 22 appears as the headline on this page: it is correct for two toolsmiths and still safely on the plateau for one.</p>
 
     <h3>The conversion table, for one toolsmith</h3>
-    <p>Sweeping the iron slider in <strong>single</strong> points rather than twos changes the answer: the odd values 13 and 11 are genuinely best over wide ranges, and a two-point sweep simply stepped over them. Each is reachable with gold still equal to weapon by putting the toolsmith on <strong>41</strong> instead of 40 &mdash; it cannot tell the difference, since it wants about 2.6% of your coal either way.</p>
+    <p>Sweeping the iron slider in <strong>single</strong> points rather than twos changes the answer: the odd values 13 and 11 are genuinely best over wide ranges, and a two-point sweep simply stepped over them. Each is reachable with gold still equal to weapon by nudging the toolsmith to <strong>39</strong> instead of 40 &mdash; it cannot tell the difference, since it wants about 2.6% of your coal either way, and the freed point goes to gold and weapon where coal actually binds. Measured, 39 beats 41 on toolsmith uptime (99.84% against 99.59%) and strands fewer bars, at identical soldier output.</p>
     <div class="scrollx">
       <table class="memmap slider">
-        <thead><tr><th>Converted iron bars</th><th>as % of your ~1,450 bar need</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th></tr></thead>
+        <thead><tr><th>Converted iron bars</th><th>as % of your ~1,450 bar need</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>iron still within 1% of best</th></tr></thead>
         <tbody>
-          <tr><td>0 &ndash; 18</td><td>0 &ndash; 1%</td><td>23</td><td>14</td><td>40</td><td>23</td></tr>
-          <tr class="hot"><td>18 &ndash; 148</td><td>1 &ndash; 10%</td><td>23</td><td>13</td><td><strong>41</strong></td><td>23</td></tr>
-          <tr class="hot"><td>148 &ndash; 376</td><td>10 &ndash; 26%</td><td>24</td><td>12</td><td>40</td><td>24</td></tr>
-          <tr><td>376 &ndash; 545</td><td>26 &ndash; 38%</td><td>24</td><td>11</td><td><strong>41</strong></td><td>24</td></tr>
-          <tr><td>545 and above</td><td>38%+</td><td>25</td><td>10</td><td>40</td><td>25</td></tr>
+          <tr><td>0 &ndash; 18</td><td>0 &ndash; 1%</td><td>23</td><td>14</td><td>40</td><td>23</td><td>13 &ndash; 20</td></tr>
+          <tr class="hot"><td>18 &ndash; 148</td><td>1 &ndash; 10%</td><td>24</td><td>13</td><td><strong>39</strong></td><td>24</td><td>13 only</td></tr>
+          <tr class="hot"><td>148 &ndash; 376</td><td>10 &ndash; 26%</td><td>24</td><td>12</td><td>40</td><td>24</td><td>11 &ndash; 13</td></tr>
+          <tr><td>376 &ndash; 545</td><td>26 &ndash; 38%</td><td>25</td><td>11</td><td><strong>39</strong></td><td>25</td><td>9 &ndash; 13</td></tr>
+          <tr><td>545 and above</td><td>38%+</td><td>25</td><td>10</td><td>40</td><td>25</td><td>8 &ndash; 12</td></tr>
         </tbody>
       </table>
     </div>
@@ -1223,8 +1223,8 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <div class="verdicts">
       <div class="verdict">
         <span class="stage">18 &ndash; 148 converted bars &middot; covers 32, 64 and 128</span>
-        <h4 class="setnums"><span><i>gold</i>23</span><span><i>iron</i>13</span><span><i>tool</i>41</span><span><i>weapon</i>23</span></h4>
-        <p class="note">Toolsmith 41, not 40, so the remaining 46 splits evenly and gold stays equal to weapon.</p>
+        <h4 class="setnums"><span><i>gold</i>24</span><span><i>iron</i>13</span><span><i>tool</i>39</span><span><i>weapon</i>24</span></h4>
+        <p class="note">Toolsmith 39, not 40, so the remaining 48 splits evenly and gold stays equal to weapon. This is the tightest band on the page &mdash; one point either way costs about 2%.</p>
       </div>
       <div class="verdict">
         <span class="stage">148 &ndash; 376 converted bars &middot; covers 192 and 256</span>
@@ -1237,7 +1237,7 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
         <p class="note">One toolsmith. Add 2 to iron per extra toolsmith: 16 for two, 18 for three.</p>
       </div>
     </div>
-    <p style="margin-top:1.4em">Iron-bar panel <strong>tool 60 / weapon 40</strong> in every case; shipyard and vehicle hall 0. Above 376 bars go to 24 / 11 / 41 / 24, and above 545 to 25 / 10 / 40 / 25 &mdash; but those need heavier casting than most games produce.</p>
+    <p style="margin-top:1.4em">Iron-bar panel <strong>tool 60 / weapon 40</strong> in every case; shipyard and vehicle hall 0. Above 376 bars go to 25 / 11 / 39 / 25, and above 545 to 25 / 10 / 40 / 25 &mdash; but those need heavier casting than most games produce.</p>
 
     <h3>Bottom line</h3>
     <div class="verdicts" style="margin-bottom:18px">
