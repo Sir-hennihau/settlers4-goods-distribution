@@ -1104,27 +1104,79 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     </div>
     <p style="margin-top:1.2em">At 8 and 10 the iron smelter is starved so hard that the whole chain stalls behind it &mdash; the gold and weapon piles sit 90&ndash;99% full because they have coal but no bars to pair it with, and output falls to 1201. At 14 and above the smelter is comfortable but strands 227 bars you already conjured. <strong>12 is the floor</strong>, and it is the floor at every conversion level tested. The slider never needs to go below it. You were right to doubt the 8.</p>
 
-    <h3>The complete table</h3>
-    <p>The exact optimum is a smooth curve, so each slider value rules over a <em>band</em> of conversion totals &mdash; it is best while the exact value sits within half a point of it. For the army modelled here (1,250 weapons plus 203 tools = <strong>1,453 iron bars needed in total</strong>):</p>
+    <h3>It is a cliff, not a peak &mdash; and that settles the 14-versus-16 question</h3>
+    <p>Sweeping the iron slider properly shows the shape of the problem. Output is <strong>flat above the right value and falls off a cliff below it</strong>. One toolsmith, no conversions, coal-tight:</p>
     <div class="scrollx">
       <table class="memmap slider">
-        <thead><tr><th>Iron</th><th>Converted bars</th><th>as % of all bars you need</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th></tr></thead>
+        <thead><tr><th>Iron slider</th><th>8</th><th>10</th><th>12</th><th>14</th><th>16</th><th>18</th><th>20</th></tr></thead>
         <tbody>
-          <tr><td>14</td><td>0 &ndash; 1</td><td>0%</td><td>23</td><td>14</td><td>40</td><td>23</td></tr>
-          <tr class="hot"><td>13</td><td>1 &ndash; 137</td><td>0 &ndash; 9%</td><td>23</td><td>13</td><td><strong>41</strong></td><td>23</td></tr>
-          <tr class="hot"><td>12</td><td>137 &ndash; 267</td><td>9 &ndash; 18%</td><td>24</td><td>12</td><td>40</td><td>24</td></tr>
-          <tr class="hot"><td>11</td><td>267 &ndash; 392</td><td>18 &ndash; 27%</td><td>24</td><td>11</td><td><strong>41</strong></td><td>24</td></tr>
-          <tr class="hot"><td>10</td><td>392 &ndash; 512</td><td>27 &ndash; 35%</td><td>25</td><td>10</td><td>40</td><td>25</td></tr>
-          <tr><td>9</td><td>512 &ndash; 628</td><td>35 &ndash; 43%</td><td>25</td><td>9</td><td><strong>41</strong></td><td>25</td></tr>
-          <tr><td>8</td><td>628 &ndash; 739</td><td>43 &ndash; 51%</td><td>26</td><td>8</td><td>40</td><td>26</td></tr>
+          <tr><td>T3 soldiers</td><td>1179</td><td>1179</td><td>1179</td><td class="hot"><strong>1237</strong></td><td>1235</td><td>1234</td><td>1233</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="margin-top:1.2em">Gold and weapon are <strong>equal in every row</strong>. An odd iron value would normally force them apart, because they share whatever is left of 60 &mdash; but the fix is to move the <em>toolsmith</em> by one instead, to <strong>41</strong>. The remainder is then even again and the invariant survives. The toolsmith cannot tell the difference: it wants about 2.6% of your coal and 40 was already a floor rather than a requirement, so 41 costs nothing and never drops below the value proven safe above. Measured at three conversion levels, tool 39, 40 and 41 land within 0.6% of each other on soldiers and within 0.3 points on uptime.</p>
-    <p>The <strong>percentage column is the scale-free one</strong> &mdash; if you play to a bigger or smaller army, read the band off that rather than the absolute bar count.</p>
+    <p style="margin-top:1.2em">14, 16, 18 and 20 are within 0.3% of each other. Below 14 the iron smelter can no longer keep both smiths in bars and output drops 4.7% in a single step. <strong>So 14 and 16 were both right</strong> &mdash; they sit on the same plateau, and the earlier inconsistency in this page was me quoting two points from a flat line as if one were the answer.</p>
+    <p>The number that does move the plateau is the <strong>toolsmith count</strong>, because each one adds bar demand the smelter has to cover. Measured at zero conversions:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Toolsmiths</th><th>tools per weapon</th><th>Cliff below</th><th>Use</th><th>Panel gold / iron / tool / weapon</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>1</td><td>0.16</td><td>14</td><td>iron 14</td><td>23 / 14 / 40 / 23</td></tr>
+          <tr><td>2</td><td>0.32</td><td>16</td><td>iron 16</td><td>22 / 16 / 40 / 22</td></tr>
+          <tr><td>3</td><td>0.48</td><td>18</td><td>iron 18</td><td>21 / 18 / 40 / 21</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em"><strong>+2 iron per extra toolsmith.</strong> That is the whole rule, and it is why 22 / 16 / 40 / 22 appears as the headline on this page: it is correct for two toolsmiths and still safely on the plateau for one.</p>
 
-    <h3>Every setting, coal supply stepped 1% at a time</h3>
-    <p>Seven settings, sixty-six supply levels each &mdash; <strong>462 rows</strong>, so nothing hides between the coarse steps. Iron-bar panel tool 60 / weapon 40 throughout; no starting buffer, mines matched to demand at 100%, so coal is genuinely the binding constraint.</p>
+    <h3>The conversion table, for one toolsmith</h3>
+    <p>Planning around a single toolsmith, the simulation collapses to <strong>three settings</strong> &mdash; not the seven the formula alone suggested. The exact optimum drifts smoothly, but only every second value is reachable if gold is to equal weapon, and the plateau is wide enough that the intermediate steps never win:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Converted iron bars</th><th>as % of your ~1,450 bar need</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>0 &ndash; 110</td><td>0 &ndash; 8%</td><td>23</td><td>14</td><td>40</td><td>23</td></tr>
+          <tr class="hot"><td>110 &ndash; 450</td><td>8 &ndash; 31%</td><td>24</td><td>12</td><td>40</td><td>24</td></tr>
+          <tr class="hot"><td>450 and above</td><td>31%+</td><td>25</td><td>10</td><td>40</td><td>25</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Every value is even, so the toolsmith stays on <strong>40</strong> throughout and gold equals weapon without any parity trick. The measured crossovers:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Converted bars</th><th>iron 8</th><th>iron 10</th><th>iron 12</th><th>iron 14</th><th>Best</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>1179</td><td>1179</td><td>1179</td><td class="hot">1237</td><td>14</td></tr>
+          <tr><td>64</td><td>1184</td><td>1188</td><td>1201</td><td class="hot">1221</td><td>14</td></tr>
+          <tr><td>96</td><td>1187</td><td>1192</td><td>1215</td><td class="hot">1221</td><td>14</td></tr>
+          <tr><td>128</td><td>1189</td><td>1196</td><td class="hot">1232</td><td>1221</td><td>12</td></tr>
+          <tr><td>192</td><td>1195</td><td>1207</td><td class="hot">1246</td><td>1221</td><td>12</td></tr>
+          <tr><td>256</td><td>1201</td><td>1220</td><td class="hot">1247</td><td>1221</td><td>12</td></tr>
+          <tr><td>384</td><td>1217</td><td>1246</td><td class="hot">1247</td><td>1221</td><td>12</td></tr>
+          <tr><td>512</td><td>1237</td><td class="hot">1248</td><td>1243</td><td>1221</td><td>10</td></tr>
+          <tr><td>768</td><td>1249</td><td class="hot">1251</td><td>1240</td><td>1221</td><td>10</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">It never pays to go below 10 at any conversion level a real game produces. My earlier claim of iron 8 at 256 bars was wrong by two full steps, and the 11 / 9 rows that needed a toolsmith of 41 turn out never to be the best choice at all.</p>
+
+    <h3>When in doubt, err high</h3>
+    <p>The cliff makes the errors asymmetric, and it is worth knowing which way to lean:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Converted bars</th><th>Best iron</th><th>Cost of one step too high</th><th>Cost of one step too low</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>14</td><td>&minus;0.2%</td><td class="hot">&minus;4.7%</td></tr>
+          <tr><td>64</td><td>14</td><td>&minus;0.1%</td><td class="hot">&minus;1.7%</td></tr>
+          <tr><td>128</td><td>12</td><td>&minus;0.8%</td><td class="hot">&minus;2.8%</td></tr>
+          <tr><td>192</td><td>12</td><td>&minus;2.0%</td><td class="hot">&minus;3.1%</td></tr>
+          <tr><td>256</td><td>12</td><td>&minus;2.1%</td><td>&minus;2.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Too high costs at most 2% and usually a rounding error; too low costs up to 4.7%. If you are unsure how many bars you have conjured, <strong>stay on the higher setting</strong> &mdash; and if you are unsure whether you will add a second toolsmith, stay on iron 16, which covers both.</p>
+
+    <h3>Coal-shortage proof: every iron value, stepped 1% at a time</h3>
+    <p>Every iron value from 14 down to 8 &mdash; including the ones that turn out never to be optimal &mdash; across sixty-six supply levels each, <strong>462 rows</strong>, so nothing hides between coarse steps. The three you will actually use are iron 14, 12 and 10. Iron-bar panel tool 60 / weapon 40 throughout; no starting buffer, mines matched to demand at 100%, so coal is genuinely the binding constraint.</p>
     <div class="scrollx">
       <table class="memmap slider">
         <thead><tr><th>Iron</th><th>Panel gold / iron / tool / weapon</th><th>Band</th><th>Toolsmith worst case</th><th>Max loose bars</th><th>Weaponsmith stops being coal-short at</th></tr></thead>
@@ -1197,22 +1249,22 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     <h3>Conversion setting, in short</h3>
     <div class="verdicts">
       <div class="verdict">
-        <span class="stage">Under 137 converted bars &middot; under 9% of your bars</span>
-        <h4 class="setnums"><span><i>gold</i>23</span><span><i>iron</i>13</span><span><i>tool</i>41</span><span><i>weapon</i>23</span></h4>
-        <p class="note">Toolsmith 41, not 40, so the remaining 46 splits evenly and gold stays equal to weapon. Staying on 23 / 14 / 40 / 23 is also fine &mdash; the difference is inside the flat band.</p>
+        <span class="stage">Up to 110 converted bars</span>
+        <h4 class="setnums"><span><i>gold</i>23</span><span><i>iron</i>14</span><span><i>tool</i>40</span><span><i>weapon</i>23</span></h4>
+        <p class="note">One toolsmith. Iron 16 is equally good and safer if you might add a second toolsmith.</p>
       </div>
       <div class="verdict">
-        <span class="stage">137 &ndash; 267 bars &middot; 9 &ndash; 18%</span>
+        <span class="stage">110 &ndash; 450 converted bars</span>
         <h4 class="setnums"><span><i>gold</i>24</span><span><i>iron</i>12</span><span><i>tool</i>40</span><span><i>weapon</i>24</span></h4>
-        <p class="note">The workhorse setting for a normally-cast conversion economy, and gold stays equal to weapon.</p>
+        <p class="note">Covers the whole realistic casting range, 128 through 384 bars, on one setting.</p>
       </div>
       <div class="verdict">
-        <span class="stage">267 &ndash; 512 bars &middot; 18 &ndash; 35%</span>
+        <span class="stage">450 and above</span>
         <h4 class="setnums"><span><i>gold</i>25</span><span><i>iron</i>10</span><span><i>tool</i>40</span><span><i>weapon</i>25</span></h4>
-        <p class="note">Heavy casting. For the odd step between them, iron 11, use 24 / 11 / <strong>41</strong> / 24. Past this range the slider stops helping &mdash; build fewer iron smelts and mines instead.</p>
+        <p class="note">Heavy casting only. It never pays to go below 10 at any level a real game reaches.</p>
       </div>
     </div>
-    <p style="margin-top:1.4em">Iron-bar panel <strong>tool 60 / weapon 40</strong> in every case; shipyard and vehicle hall 0. Toolsmith coal is <strong>40 for even iron values and 41 for odd ones</strong>, purely to keep gold equal to weapon &mdash; and it is 0% short of coal in every one of the thirty-five test rows either way.</p>
+    <p style="margin-top:1.4em">Iron-bar panel <strong>tool 60 / weapon 40</strong> in every case; shipyard and vehicle hall 0. The toolsmith stays on <strong>40</strong> throughout &mdash; all three iron values are even, so gold equals weapon with no parity trick needed, and the toolsmith is 0% short of coal in every one of the 462 test rows below.</p>
 
     <h3>Bottom line</h3>
     <div class="verdicts" style="margin-bottom:18px">
