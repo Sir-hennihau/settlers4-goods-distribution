@@ -1160,11 +1160,91 @@ p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span
     </div>
     <p style="margin-top:1.2em">Read the left side of that table: <strong>iron 10 and 11 are the dangerous end</strong>, costing up to 5.7% when you have not cast much. The right side is merely mediocre &mdash; 16 through 20 sit around 2% regardless. So the asymmetry stands: <strong>erring high wastes about 2%, erring low can cost 5%.</strong></p>
 
+    <h3>Two toolsmiths, and the 200-tool stop</h3>
+    <p>Most players who build a second toolsmith do not keep it running all game &mdash; they make somewhere around 200 tools and then fall back to one, or run the second only occasionally. That sounds like it should pull the slider back toward the one-toolsmith numbers. <strong>It does not.</strong> I swept the stop point from 100 tools to 400 and the recommended iron value never moved:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Stop after</th><th>Tools made by minute 70</th><th>0 bars</th><th>64</th><th>128</th><th>192</th><th>256</th><th>384</th></tr></thead>
+        <tbody>
+          <tr><td>100 tools</td><td>252</td><td>16</td><td>15</td><td>15</td><td>14</td><td>14</td><td>12</td></tr>
+          <tr><td>150 tools</td><td>277</td><td>16</td><td>15</td><td>15</td><td>14</td><td>14</td><td>13</td></tr>
+          <tr class="hot"><td><strong>200 tools</strong></td><td>302</td><td>16</td><td>15</td><td>15</td><td>14</td><td>14</td><td>13</td></tr>
+          <tr><td>250 tools</td><td>327</td><td>15</td><td>15</td><td>14</td><td>14</td><td>14</td><td>14</td></tr>
+          <tr><td>300 tools</td><td>352</td><td>15</td><td>15</td><td>14</td><td>14</td><td>14</td><td>14</td></tr>
+          <tr><td>400 tools</td><td>402</td><td>16</td><td>15</td><td>15</td><td>15</td><td>15</td><td>14</td></tr>
+          <tr><td>never &mdash; two all game</td><td>404</td><td>16</td><td>15</td><td>15</td><td>15</td><td>15</td><td>14</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:1.2em">The reason is that the decision is made entirely in the first half of the game, while both smiths are running, and the ledger is cumulative &mdash; whatever debt the iron smelter builds up early is never repaid. Splitting one run into its two phases makes it obvious. Each row is the same game on the same build, only the iron slider changed:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Iron slider</th><th>Weapons in the first 35 min<br><span style="font-weight:400;opacity:.7">both smiths running</span></th><th>Weapons in the last 35 min<br><span style="font-weight:400;opacity:.7">one smith running</span></th><th>T3 soldiers</th></tr></thead>
+        <tbody>
+          <tr><td>13</td><td>540</td><td>635</td><td>1176</td></tr>
+          <tr><td>14</td><td>566</td><td>633</td><td>1199</td></tr>
+          <tr><td>15</td><td>589</td><td>634</td><td>1223</td></tr>
+          <tr class="hot"><td><strong>16</strong></td><td><strong>606</strong></td><td>630</td><td><strong>1236</strong></td></tr>
+          <tr><td>18</td><td>598</td><td>633</td><td>1232</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The second column spreads <strong>66 weapons</strong>. The third spreads <strong>five</strong>. Once the second toolsmith stops, every value from 13 to 18 runs the weaponsmiths at essentially 100% and the slider stops mattering &mdash; so set it for the phase that does matter, and leave it.</p>
+    <p>Which answers the obvious follow-up: <strong>is it worth re-tuning when you shut the second smith down?</strong> I tested every early/late pair from 14&ndash;18 switching down to 11&ndash;15. The best pair beat the best fixed value by <strong>0.0% to 0.5%</strong> &mdash; inside the noise. Set it once and forget it.</p>
+
+    <h3>The two-toolsmith robustness table</h3>
+    <p>Same seven build shapes, same worst-case-loss measure as the one-toolsmith table above. Measured with the second smith stopping at 200 tools, but as the sweep shows, it holds for two toolsmiths generally.</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Converted bars</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>18</th><th>Most robust</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>5.6%</td><td>5.6%</td><td>5.5%</td><td>4.9%</td><td>3.0%</td><td>1.0%</td><td class="hot"><strong>0.3%</strong></td><td>1.6%</td><td>iron 16</td></tr>
+          <tr><td>64</td><td>5.2%</td><td>4.9%</td><td>4.4%</td><td>3.8%</td><td>1.1%</td><td class="hot"><strong>0.5%</strong></td><td>1.4%</td><td>1.8%</td><td>iron 15</td></tr>
+          <tr><td>128</td><td>4.5%</td><td>4.1%</td><td>3.3%</td><td>2.6%</td><td>0.6%</td><td class="hot"><strong>0.4%</strong></td><td>1.6%</td><td>1.9%</td><td>iron 15</td></tr>
+          <tr><td>192</td><td>3.8%</td><td>3.3%</td><td>2.4%</td><td>0.9%</td><td>0.6%</td><td class="hot"><strong>0.4%</strong></td><td>1.6%</td><td>1.9%</td><td>iron 15</td></tr>
+          <tr><td>256</td><td>3.2%</td><td>2.7%</td><td>1.1%</td><td>0.7%</td><td>0.5%</td><td class="hot"><strong>0.4%</strong></td><td>1.8%</td><td>2.1%</td><td>iron 15</td></tr>
+          <tr><td>384</td><td>1.9%</td><td>0.9%</td><td>0.5%</td><td>0.5%</td><td class="hot"><strong>0.3%</strong></td><td>0.4%</td><td>1.9%</td><td>2.2%</td><td>iron 14</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Same shape as with one toolsmith &mdash; a cliff on the low side, a shallow plateau on the high side &mdash; shifted up by two points. The same rule applies: <strong>if unsure, err high.</strong></p>
+
+    <h3>The two-toolsmith ladder</h3>
+    <p>Scanning the crossovers in 20-bar steps gives three bands, and the middle one covers almost the whole realistic range:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Converted iron bars</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>Worst case across all seven builds</th></tr></thead>
+        <tbody>
+          <tr class="hot"><td>0 &ndash; 40</td><td>22</td><td>16</td><td>40</td><td>22</td><td>0.3% below best</td></tr>
+          <tr class="hot"><td>40 &ndash; 320</td><td>23</td><td>15</td><td><strong>39</strong></td><td>23</td><td>0.5% below best</td></tr>
+          <tr class="hot"><td>320 and above</td><td>23</td><td>14</td><td>40</td><td>23</td><td>0.3% below best</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The iron-bar panel stays <strong>tool 60 / weapon 40</strong> throughout, exactly as with one toolsmith. Across all 42 runs behind this table the toolsmith sat dry <strong>0.03%</strong> of the time and idle weapons were <strong>exactly zero</strong>; the toolsmith still held 98.8&ndash;99.5% uptime with coal supply cut to 80%.</p>
+
+    <h3>The part that actually costs you: the iron chain, not the slider</h3>
+    <p>There is a trap here worth more than any slider point. A second toolsmith eats 2.9 iron bars a minute on top of your weaponsmiths. If you add the building but not the smelter capacity to feed it, <strong>no slider setting recovers the loss</strong>:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Setup</th><th>Iron smelters</th><th>Coal needed</th><th>Best iron slider</th><th>T3 soldiers</th><th>Tools</th></tr></thead>
+        <tbody>
+          <tr><td>One toolsmith</td><td>6.7</td><td>77.8/min &middot; 74% of ceiling</td><td>14</td><td>1237</td><td>203</td></tr>
+          <tr><td>Two, chain sized for the <em>average</em> tool rate</td><td>7.2</td><td>80.7/min &middot; 76%</td><td>no peak &mdash; climbs past 22</td><td>1191</td><td>302</td></tr>
+          <tr class="hot"><td>Two, chain sized for <em>both smiths running</em></td><td>7.7</td><td>83.6/min &middot; 79%</td><td>16</td><td><strong>1236</strong></td><td><strong>302</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">Read the middle row carefully. Sizing the iron chain for the <em>average</em> of a 5.8-then-2.9 tool rate costs <strong>45 soldiers, about 4%</strong>, and the optimiser responds by pushing iron higher and higher without ever finding a peak &mdash; the signature of a smelter that is simply too small. Build for the peak instead and the cost of the second toolsmith drops to <strong>one soldier</strong>: 1236 against 1237, with 99 extra tools.</p>
+    <p>So the honest price of the second toolsmith is <strong>one more iron smelter and about 7.5% more coal</strong>, not soldiers. Both fit inside the engine's hard ceiling of 105.63 coal per minute per sector, at 79% of it.</p>
+    <p><span class="badge">One-line answer</span> Two toolsmiths: <strong>22 / 16 / 40 / 22</strong> until you have cast about 40 bars, then <strong>23 / 15 / 39 / 23</strong> for the rest of a normal game. Stopping the second smith at 200 tools changes nothing about the sliders &mdash; but do build the extra iron smelter before you build the second toolsmith.</p>
+
     <h3>What I am confident about, and what I am not</h3>
     <ul class="rules">
       <li><i class="tick"></i><span><b>Solid &mdash; the mechanism.</b> Both formulas, the shared per-type ledger, the recipes, the 71 ms tick and the 105.63 coal/min ceiling are read from the binary and the shipped data files, and two of them reproduce independently measured community numbers. None of that depends on my simulation.</span></li>
       <li><i class="tick"></i><span><b>Solid &mdash; gold equals weapon.</b> It falls out of the recipe, and the ledgers converge to within 1% over a full game with the coal splitting 1.99 against the recipe's 2.00.</span></li>
-      <li><i class="tick"></i><span><b>Solid &mdash; the toolsmith at 40.</b> 0.03% dry across 63 runs spanning nine configs and seven build shapes, and idle weapons of exactly zero in all of them.</span></li>
+      <li><i class="tick"></i><span><b>Solid &mdash; the toolsmith at 40.</b> 0.03% dry across 105 runs spanning one- and two-toolsmith builds, nine conversion configs and seven build shapes, and idle weapons of exactly zero in all of them.</span></li>
       <li><i class="tick"></i><span><b>Solid &mdash; iron below 12 is bad.</b> Costs 3&ndash;6% in every build tested, at every conversion level.</span></li>
       <li><i class="tick"></i><span><b>Not solid &mdash; band edges to the bar.</b> The crossovers above are approximate. The underlying optimum shifts with how much slack your ore chains carry; on a coal-rich build every value from 14 to 20 is within a percent of each other. Treat 35 and 220 as "roughly", not thresholds.</span></li>
       <li><i class="tick"></i><span><b>Not solid &mdash; the exact peak.</b> On a perfectly matched build it is 14; give the gold chain 10% slack and it is 16; give the whole thing 10% more coal and it is 20. The three-value ladder above is chosen for robustness, not because 14, 13 and 12 are special.</span></li>
