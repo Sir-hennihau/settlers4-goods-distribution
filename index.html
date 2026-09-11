@@ -1068,6 +1068,50 @@ with  ρ = L/S :
     <p>Your milestones imply 200 T3 between minute 35 and 60 (8/min), 200 more by 80 (10/min), then <strong>600 in the last twenty minutes — 30 per minute</strong>. That last figure needs 125.5 coal a minute, which is <strong>119 % of the 105.63/min a single economy sector can dispatch</strong>. No slider setting reaches it; the simulation tops out at 846 by minute 100 and gets to 1000 around minute 110.</p>
     <p>Three ways out, in order of practicality: start the military ramp earlier so the curve is flatter and never demands 30/min; split the settlement into <strong>two economy sectors</strong>, each of which gets its own full dispatch budget; or accept 1:50 instead of 1:40. The first is free and is what the schedule above assumes you will do.</p>
 
+    <h3>Vikings and Trojans: iron bars from a spell</h3>
+    <p>Both races can convert goods straight into iron bars with a priest — Vikings from stone, Trojans from sulfur — and many players cast it from the opening. Those bars never pass through an iron smelter, which breaks one term of the model. It turns out to break <em>exactly one</em>.</p>
+    <p>Track what a converted bar does to the ledger. It is delivered to the weaponsmith like any other bar, so it bumps that counter by 1; the coal for the resulting weapon bumps it by another 1. <strong>The weaponsmith's counter moves by 2 per weapon whatever the bar's origin</strong> — identical to the smelted case. The goldsmelter therefore still needs to track it one-for-one, so <strong>gold and weapon stay equal</strong>, and the 2 gold bars per weapon still comes out right on its own.</p>
+    <p>What changes is that the <strong>iron smelter never received the coal</strong> for those bars. Its counter is short by exactly C, and its share of the coal should shrink by the same amount:</p>
+    <div class="formula" style="max-width:var(--col)">ledger targets with C converted bars
+   goldsmelter  2S        ironsmelter  S + L − C
+   weaponsmith  2S        toolsmith    2L
+
+p<span class="cm">iron</span> = 60 × (S + L − C) / (5S + L − C)      <span class="cm">S = weapons, L = tools</span>
+p<span class="cm">gold</span> = p<span class="cm">weapon</span> = (60 − p<span class="cm">iron</span>) / 2</div>
+    <p style="margin-top:1.2em">Note the arithmetic constraint: only an <strong>even</strong> iron slider lets gold and weapon come out equal, since they share whatever is left of 60. Odd values force them apart and break the invariant.</p>
+    <p>Simulated on a Viking build, coal-tight, with the conversions arriving across the first twenty minutes — the presets and the coal split they actually produce:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Converted bars</th><th>Gold</th><th>Iron</th><th>Tool</th><th>Weapon</th><th>T3</th><th>Toolsmith</th><th>Idle gold</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--hair-2)">coal actually delivered, %</th></tr>
+        <tr><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>gold</th><th>iron</th><th>weapon</th><th>tool</th></tr></thead>
+        <tbody>
+          <tr><td>none</td><td>23</td><td>14</td><td>40</td><td>23</td><td>1236</td><td>99.3 %</td><td>11</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
+          <tr><td>32</td><td colspan="4" style="opacity:.75">keep the no-conversion setting</td><td>1236</td><td>99.3 %</td><td>11</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
+          <tr><td>64</td><td colspan="4" style="opacity:.75">keep the no-conversion setting</td><td>1236</td><td>99.3 %</td><td>11</td><td>45.6</td><td>27.8</td><td>22.7</td><td>3.9</td></tr>
+          <tr class="hot"><td>128</td><td>25</td><td>10</td><td>40</td><td>25</td><td>1242</td><td>99.3 %</td><td>31</td><td>47.9</td><td>24.4</td><td>23.8</td><td>3.9</td></tr>
+          <tr class="hot"><td>192</td><td>25</td><td>10</td><td>40</td><td>25</td><td>1253</td><td>99.4 %</td><td>10</td><td>47.9</td><td>24.2</td><td>24.0</td><td>3.9</td></tr>
+          <tr class="hot"><td>256</td><td>26</td><td>8</td><td>40</td><td>26</td><td>1253</td><td>99.4 %</td><td>10</td><td>48.0</td><td>24.1</td><td>24.0</td><td>3.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em"><strong>Under about 64 converted bars, do nothing.</strong> The formula asks for roughly one point off the iron slider, which is smaller than the run-to-run spread, and only even steps are available anyway. From 128 upward the adjustment is real and monotone: every 128 converted bars is worth about <strong>two points off iron, one point onto each of gold and weapon</strong>.</p>
+    <p>The failure mode if you ignore it is unmistakable. Running the no-conversion setting with 256 bars converted leaves <strong>230 iron bars stranded</strong> in storage — you smelted bars you already had. Getting it right clears them to zero and returns about twenty soldiers.</p>
+
+    <h3>Don't phase this one</h3>
+    <p>The obvious refinement is to cut the iron smelter hard while the converted bars are being consumed and restore it later. Tested, and it is worse:</p>
+    <div class="scrollx">
+      <table class="memmap slider">
+        <thead><tr><th>Strategy (256 converted bars)</th><th>T3</th><th>Idle gold</th><th>Loose bars</th></tr></thead>
+        <tbody>
+          <tr><td>no-conversion setting, unchanged</td><td>1220</td><td>55</td><td>230</td></tr>
+          <tr class="hot"><td>one adjusted setting, all game</td><td>1239</td><td>38</td><td>77</td></tr>
+          <tr><td>phased 28/4 → 26/8 → 24/12</td><td>1237</td><td>43</td><td>82</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:1.2em">The phased version over-corrects: an iron slider near zero pushes gold and weapon to 28 each, and the goldsmelter runs ahead of what the weaponsmith can pair — 116 gold bars stranded at 128 conversions. One adjusted setting, left alone, is both simpler and better. The same conclusion as everywhere else in this system: the ledger is cumulative, so pick the number that is right for the whole match and stop touching it.</p>
+    <p><span class="badge">Unverified</span> I could not confirm the per-cast conversion amount from the shipped data. <em class="term">Config/Magic.cfg</em> gives the <em class="term">X-&gt;Y</em> spell a limit of 6 for Vikings and 4 for Trojans, which is not goods-per-cast in any unit I could pin down, and the runtime reads it through a computed index the static cross-references do not reach. The table above is therefore indexed by <strong>total bars you have converted</strong>, which you can count yourself, rather than by casts.</p>
+
     <h3>Bottom line</h3>
     <div class="verdicts" style="margin-bottom:18px">
       <div class="verdict">
